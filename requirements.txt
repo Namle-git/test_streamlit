@@ -1,4 +1,4 @@
-torch @ https://download.pytorch.org/whl/cpu
+torch @ https://download.pytorch.org/whl/torch/torch-2.2.2+cpu.cxx11.abi-cp311-cp311-linux_x86_64.whl
 pandas==1.5.3
 openai==1.13.3
 openpyxl==3.1.2

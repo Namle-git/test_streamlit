@@ -1,5 +1,4 @@
 pandas==1.5.3
-torch==2.2.2
 openai==1.13.3
 openpyxl==3.1.2
 streamlit==1.32.0
@@ -7,7 +6,6 @@ streamlit_authenticator==0.3.1
 pyyaml==6.0.1
 soundfile==0.12.1
 sounddevice==0.4.6
-transformers==4.39.0
 pypdf==4.1.0
 tqdm==4.66.1
 numpy==1.26.2

@@ -1,6 +1,4 @@
---index-url https://download.pytorch.org/whl/cu118
---extra-index-url=https://pypi.org/simple
-torch
+torch @ https://download.pytorch.org/whl/cpu
 pandas==1.5.3
 openai==1.13.3
 openpyxl==3.1.2

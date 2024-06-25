@@ -39,6 +39,8 @@ audio_data = mic_recorder(
 )
 
 if audio_data:
-    st.audio(audio_data, format="audio/wav")  # Ensure the audio format is correct
-    transcription = transcribe_audio(audio_data)
+    # Extract the audio bytes from the dictionary
+    audio_bytes = audio_data["audio_data"]
+    st.audio(audio_bytes, format="audio/wav")  # Ensure the audio format is correct
+    transcription = transcribe_audio(audio_bytes)
     st.write(f"Transcription: {transcription}")

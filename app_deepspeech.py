@@ -19,16 +19,17 @@ def automatic_recording_and_transcription(duration: int = 5):
     )
     return text
 
-# Add the HTML and JavaScript to simulate the button click
+# Add the HTML and JavaScript to simulate the button click with logging
 components.html(
     """
     <script>
       function simulateButtonClick() {
         var recordButton = document.querySelector('.myButton');
         if (recordButton) {
+          console.log("Button found, clicking...");
           recordButton.click();
         } else {
-          // Retry if the button is not found
+          console.log("Button not found, retrying...");
           setTimeout(simulateButtonClick, 1000);
         }
       }

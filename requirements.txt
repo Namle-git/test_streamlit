@@ -1,5 +1,6 @@
 streamlit
-SpeechRecognition
-flask
+streamlit-webrtc
+numpy
+av
+speechrecognition
 pydub
-requests

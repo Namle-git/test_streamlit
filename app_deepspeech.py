@@ -1,3 +1,4 @@
+import av
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, ClientSettings
 
@@ -5,11 +6,12 @@ class AudioProcessor(AudioProcessorBase):
     def __init__(self):
         self.samplerate = 44100
 
-    def recv(self, frame):
-        # Here you can add your audio processing code
+    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
+        # Example of processing audio frame
+        # Here you can modify the frame, apply filters, etc.
         return frame
 
-webrtc_streamer(
+webrtc_ctx = webrtc_streamer(
     key="example",
     mode="sendrecv",
     client_settings=ClientSettings(
@@ -18,5 +20,8 @@ webrtc_streamer(
     ),
     audio_processor_factory=AudioProcessor,
 )
+
+if webrtc_ctx.state.playing:
+    st.write("Streaming audio...")
 
 st.write("This is an audio-only Streamlit-WeRTC app.")

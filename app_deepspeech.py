@@ -1,28 +1,61 @@
-import av
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, ClientSettings, WebRtcMode
+import speech_recognition as sr
+import os
+from pydub import AudioSegment
+import tempfile
+import requests
 
-class AudioProcessor(AudioProcessorBase):
-    def __init__(self):
-        self.samplerate = 44100
+st.title("Speech Recognition App")
 
-    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        # Example of processing audio frame
-        return frame
+# Frontend HTML and JavaScript
+st.write("""
+    <script>
+        const startRecording = () => {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    const mediaRecorder = new MediaRecorder(stream);
+                    let audioChunks = [];
 
-WEBRTC_CLIENT_SETTINGS = ClientSettings(
-    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-    media_stream_constraints={"audio": True, "video": False},
-)
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
 
-webrtc_ctx = webrtc_streamer(
-    key="example",
-    mode=WebRtcMode.SENDRECV,
-    client_settings=WEBRTC_CLIENT_SETTINGS,
-    audio_processor_factory=AudioProcessor,
-)
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks);
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audio = new Audio(audioUrl);
+                        audio.play();
 
-if webrtc_ctx.state.playing:
-    st.write("Streaming audio...")
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        reader.onloadend = () => {
+                            const base64String = reader.result.split(',')[1];
+                            fetch('/audio', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ audio: base64String }),
+                            }).then(response => response.json())
+                              .then(data => {
+                                  console.log(data);
+                                  document.getElementById('transcription').innerText = data.transcription;
+                              });
+                        };
+                    };
 
-st.write("This is an audio-only Streamlit-WeRTC app.")
+                    mediaRecorder.start();
+
+                    setTimeout(() => {
+                        mediaRecorder.stop();
+                    }, 5000); // Record for 5 seconds
+                });
+        };
+    </script>
+""", unsafe_allow_html=True)
+
+# Button to start recording
+if st.button("Record"):
+    st.write("<script>startRecording();</script>", unsafe_allow_html=True)
+
+st.write("<div id='transcription'></div>", unsafe_allow_html=True)

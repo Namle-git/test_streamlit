@@ -1,6 +1,6 @@
 import av
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, ClientSettings
+from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, ClientSettings, WebRtcMode
 
 class AudioProcessor(AudioProcessorBase):
     def __init__(self):
@@ -17,7 +17,7 @@ WEBRTC_CLIENT_SETTINGS = ClientSettings(
 
 webrtc_ctx = webrtc_streamer(
     key="example",
-    mode="sendrecv",
+    mode=WebRtcMode.SENDRECV,
     client_settings=WEBRTC_CLIENT_SETTINGS,
     audio_processor_factory=AudioProcessor,
 )

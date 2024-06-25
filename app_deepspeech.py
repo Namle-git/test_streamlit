@@ -1,6 +1,5 @@
 import streamlit as st
 from streamlit_mic_recorder import speech_to_text
-import time
 import streamlit.components.v1 as components
 
 st.title("AI Assistant with Automatic Speech Recognition")
@@ -28,11 +27,14 @@ components.html(
         var recordButton = document.querySelector('.myButton');
         if (recordButton) {
           recordButton.click();
+        } else {
+          // Retry if the button is not found
+          setTimeout(simulateButtonClick, 1000);
         }
       }
 
-      // Simulate the button click after 5 seconds
-      setTimeout(simulateButtonClick, 5000);
+      // Simulate the button click after a delay
+      setTimeout(simulateButtonClick, 2000);
     </script>
     """,
     height=0,  # Adjust height if needed

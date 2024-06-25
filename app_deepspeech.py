@@ -24,26 +24,27 @@ components.html(
     """
     <script>
       function simulateButtonClick() {
-        console.log("Checking for button in iframe...");
-        var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
-        if (iframe) {
+        console.log("Checking for iframe...");
+        var iframes = document.getElementsByTagName('iframe');
+        for (var i = 0; i < iframes.length; i++) {
+          var iframe = iframes[i];
+          console.log("Found iframe:", iframe);
           var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
           var recordButton = iframeDocument.querySelector('button.myButton');
           if (recordButton) {
             console.log("Record button found, clicking...");
             recordButton.click();
+            return;
           } else {
-            console.log("Record button not found, retrying...");
-            setTimeout(simulateButtonClick, 1000);
+            console.log("Record button not found in this iframe.");
           }
-        } else {
-          console.log("Iframe not found, retrying...");
-          setTimeout(simulateButtonClick, 1000);
         }
+        console.log("Record button not found, retrying...");
+        setTimeout(simulateButtonClick, 2000);
       }
 
       // Simulate the button click after a delay
-      setTimeout(simulateButtonClick, 2000);
+      setTimeout(simulateButtonClick, 5000);
     </script>
     """,
     height=0,  # Adjust height if needed

@@ -19,18 +19,25 @@ def automatic_recording_and_transcription(duration: int = 5):
     )
     return text
 
-# Add the HTML and JavaScript to simulate the button click with enhanced logging
+# Add the HTML and JavaScript to simulate the button click with correct class name inside the iframe
 components.html(
     """
     <script>
       function simulateButtonClick() {
-        console.log("Checking for button...");
-        var recordButton = document.querySelector('button.myButton');
-        if (recordButton) {
-          console.log("Record button found, clicking...");
-          recordButton.click();
+        console.log("Checking for button in iframe...");
+        var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
+        if (iframe) {
+          var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+          var recordButton = iframeDocument.querySelector('button.myButton');
+          if (recordButton) {
+            console.log("Record button found, clicking...");
+            recordButton.click();
+          } else {
+            console.log("Record button not found, retrying...");
+            setTimeout(simulateButtonClick, 1000);
+          }
         } else {
-          console.log("Record button not found, retrying...");
+          console.log("Iframe not found, retrying...");
           setTimeout(simulateButtonClick, 1000);
         }
       }

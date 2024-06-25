@@ -8,16 +8,17 @@ class AudioProcessor(AudioProcessorBase):
 
     def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
         # Example of processing audio frame
-        # Here you can modify the frame, apply filters, etc.
         return frame
+
+WEBRTC_CLIENT_SETTINGS = ClientSettings(
+    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+    media_stream_constraints={"audio": True, "video": False},
+)
 
 webrtc_ctx = webrtc_streamer(
     key="example",
     mode="sendrecv",
-    client_settings=ClientSettings(
-        media_stream_constraints={"audio": True, "video": False},
-        rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-    ),
+    client_settings=WEBRTC_CLIENT_SETTINGS,
     audio_processor_factory=AudioProcessor,
 )
 

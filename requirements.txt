@@ -1,5 +1,5 @@
 streamlit
-speechrecognition
+SpeechRecognition
 flask
 pydub
 requests

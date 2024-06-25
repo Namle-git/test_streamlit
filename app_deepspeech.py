@@ -25,28 +25,34 @@ components.html(
     <script>
       function simulateButtonClick(retries) {
         console.log("Checking for iframe...");
-        var iframe = document.querySelector('iframe[src*="streamlit_mic_recorder.streamlit_mic_recorder"]');
-        if (iframe) {
-          var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-          var recordButton = iframeDocument.querySelector('button.myButton');
-          if (recordButton) {
-            console.log("Record button found, clicking...");
-            recordButton.click();
-          } else {
-            console.log("Record button not found in iframe.");
-            if (retries > 0) {
-              setTimeout(function() { simulateButtonClick(retries - 1); }, 2000);
-            } else {
-              console.log("Retries exhausted. Record button not found.");
-            }
-          }
+        var iframes = document.getElementsByTagName('iframe');
+        if (iframes.length === 0) {
+          console.log("No iframes found.");
         } else {
-          console.log("Iframe not found.");
-          if (retries > 0) {
-            setTimeout(function() { simulateButtonClick(retries - 1); }, 2000);
+          console.log("Found iframes:", iframes.length);
+        }
+        for (var i = 0; i < iframes.length; i++) {
+          var iframe = iframes[i];
+          console.log("Checking iframe", i, "with src:", iframe.src);
+          var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+          if (iframeDocument) {
+            var recordButton = iframeDocument.querySelector('button.myButton');
+            if (recordButton) {
+              console.log("Record button found in iframe", i, "clicking...");
+              recordButton.click();
+              return;
+            } else {
+              console.log("Record button not found in iframe", i);
+            }
           } else {
-            console.log("Retries exhausted. Iframe not found.");
+            console.log("Iframe document not accessible for iframe", i);
           }
+        }
+        if (retries > 0) {
+          console.log("Retrying... attempts left:", retries);
+          setTimeout(function() { simulateButtonClick(retries - 1); }, 2000);
+        } else {
+          console.log("Retries exhausted. Record button not found.");
         }
       }
 

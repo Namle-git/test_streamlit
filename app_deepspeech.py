@@ -1,16 +1,12 @@
 import streamlit as st
-import speech_recognition as sr
-import os
-from pydub import AudioSegment
-import tempfile
 import requests
 
 st.title("Speech Recognition App")
 
-# Frontend HTML and JavaScript
+# Frontend HTML and JavaScript for recording audio
 st.write("""
     <script>
-        const startRecording = () => {
+        function startRecording() {
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(stream => {
                     const mediaRecorder = new MediaRecorder(stream);
@@ -22,10 +18,6 @@ st.write("""
 
                     mediaRecorder.onstop = () => {
                         const audioBlob = new Blob(audioChunks);
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        const audio = new Audio(audioUrl);
-                        audio.play();
-
                         const reader = new FileReader();
                         reader.readAsDataURL(audioBlob);
                         reader.onloadend = () => {
@@ -36,21 +28,23 @@ st.write("""
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({ audio: base64String }),
-                            }).then(response => response.json())
-                              .then(data => {
-                                  console.log(data);
-                                  document.getElementById('transcription').innerText = data.transcription;
-                              });
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('transcription').innerText = data.transcription;
+                            });
                         };
                     };
 
                     mediaRecorder.start();
-
                     setTimeout(() => {
                         mediaRecorder.stop();
                     }, 5000); // Record for 5 seconds
+                })
+                .catch(error => {
+                    console.error('Error accessing media devices.', error);
                 });
-        };
+        }
     </script>
 """, unsafe_allow_html=True)
 

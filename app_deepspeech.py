@@ -19,25 +19,17 @@ def automatic_recording_and_transcription(duration: int = 5):
     )
     return text
 
-# Add the HTML and JavaScript to simulate the button click with correct class name inside the iframe
+# Add the HTML and JavaScript to simulate the button click inside the iframe
 components.html(
     """
     <script>
-      function logIframes() {
-        var iframes = document.getElementsByTagName('iframe');
-        console.log("Number of iframes found:", iframes.length);
-        for (var i = 0; i < iframes.length; i++) {
-          console.log("Iframe", i, "title:", iframes[i].title);
-          console.log("Iframe", i, "src:", iframes[i].src);
-        }
-      }
-
       function simulateButtonClick(retries) {
         console.log("Checking for iframe...");
         var iframes = document.getElementsByTagName('iframe');
-        logIframes();  // Log all iframes and their attributes
+        console.log("Number of iframes found:", iframes.length);
         for (var i = 0; i < iframes.length; i++) {
           var iframe = iframes[i];
+          console.log("Checking iframe", i, "with title:", iframe.title, "and src:", iframe.src);
           if (iframe.title === "streamlit_mic_recorder.streamlit_mic_recorder") {
             console.log("Target iframe found:", iframe);
             var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;

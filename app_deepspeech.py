@@ -12,8 +12,8 @@ def automatic_recording_and_transcription(duration: int = 5):
         # Use speech_to_text to record and transcribe audio
         text = speech_to_text(
             language='en',
-            start_prompt="",
-            stop_prompt="",
+            start_prompt="Record",
+            stop_prompt="Stop",
             just_once=True,
             use_container_width=True,
             callback=None,

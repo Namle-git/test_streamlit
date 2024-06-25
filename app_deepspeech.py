@@ -23,28 +23,35 @@ def automatic_recording_and_transcription(duration: int = 5):
 components.html(
     """
     <script>
-      function simulateButtonClick() {
+      function simulateButtonClick(retries) {
         console.log("Checking for iframe...");
-        var iframes = document.getElementsByTagName('iframe');
-        for (var i = 0; i < iframes.length; i++) {
-          var iframe = iframes[i];
-          console.log("Found iframe:", iframe);
+        var iframe = document.querySelector('iframe[src*="streamlit_mic_recorder.streamlit_mic_recorder"]');
+        if (iframe) {
           var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
           var recordButton = iframeDocument.querySelector('button.myButton');
           if (recordButton) {
             console.log("Record button found, clicking...");
             recordButton.click();
-            return;
           } else {
-            console.log("Record button not found in this iframe.");
+            console.log("Record button not found in iframe.");
+            if (retries > 0) {
+              setTimeout(function() { simulateButtonClick(retries - 1); }, 2000);
+            } else {
+              console.log("Retries exhausted. Record button not found.");
+            }
+          }
+        } else {
+          console.log("Iframe not found.");
+          if (retries > 0) {
+            setTimeout(function() { simulateButtonClick(retries - 1); }, 2000);
+          } else {
+            console.log("Retries exhausted. Iframe not found.");
           }
         }
-        console.log("Record button not found, retrying...");
-        setTimeout(simulateButtonClick, 2000);
       }
 
-      // Simulate the button click after a delay
-      setTimeout(simulateButtonClick, 5000);
+      // Start the simulation with 10 retries
+      setTimeout(function() { simulateButtonClick(10); }, 5000);
     </script>
     """,
     height=0,  # Adjust height if needed

@@ -27,7 +27,17 @@ def transcribe_audio(audio_data: bytes) -> str:
                 return f"Could not request results; {e}"
 
 # Use streamlit-mic-recorder to record audio
-audio_data = mic_recorder(key="mic", sampling_rate=16000, sample_width=2, channels=1, audio_format="wav")
+audio_data = audio = mic_recorder(
+    start_prompt="Start recording",
+    stop_prompt="Stop recording",
+    just_once=False,
+    use_container_width=False,
+    format="webm",
+    callback=None,
+    args=(),
+    kwargs={},
+    key=None
+)
 
 if audio_data:
     st.audio(audio_data, format="audio/wav")

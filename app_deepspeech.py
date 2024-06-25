@@ -1,5 +1,5 @@
 import streamlit as st
-from st_mic_recorder import st_mic_recorder
+from streamlit_mic_recorder import mic_recorder
 import speech_recognition as sr
 import numpy as np
 from pydub import AudioSegment
@@ -27,7 +27,7 @@ def transcribe_audio(audio_data: bytes) -> str:
                 return f"Could not request results; {e}"
 
 # Use streamlit-mic-recorder to record audio
-audio_data = st_mic_recorder(key="mic", sampling_rate=16000, sample_width=2, channels=1, audio_format="wav")
+audio_data = mic_recorder(key="mic", sampling_rate=16000, sample_width=2, channels=1, audio_format="wav")
 
 if audio_data:
     st.audio(audio_data, format="audio/wav")

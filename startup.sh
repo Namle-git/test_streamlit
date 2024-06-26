@@ -8,6 +8,4 @@ pip install PyAudio==0.2.14
 
 ldconfig
 
-python flask_server.py
-
 streamlit run app.py --server.port $PORT 

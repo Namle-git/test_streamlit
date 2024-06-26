@@ -1,6 +1,12 @@
 import streamlit as st
+from flask import Flask, request, jsonify
+import speech_recognition as sr
+import base64
+from io import BytesIO
+from threading import Thread
 import requests
 
+# Initialize Streamlit app
 st.title("Speech Recognition Web App")
 
 # HTML and JavaScript for recording audio
@@ -78,10 +84,29 @@ document.addEventListener('transcriptionComplete', (event) => {
 
 st.components.v1.html(transcription_code)
 
-# Server-side processing of the transcription
-from flask import Flask, request, jsonify
-
+# Flask server setup
 app = Flask(__name__)
+
+@app.route('/upload', methods=['POST'])
+def upload_audio():
+    data = request.get_json()
+    audio_base64 = data['audio'].split(',')[1]  # Remove the data URL scheme
+    audio_data = base64.b64decode(audio_base64)
+    
+    recognizer = sr.Recognizer()
+    audio_file = BytesIO(audio_data)
+    
+    with sr.AudioFile(audio_file) as source:
+        audio = recognizer.record(source)
+    
+    try:
+        transcription = recognizer.recognize_google(audio)
+    except sr.UnknownValueError:
+        transcription = "Google Speech Recognition could not understand audio"
+    except sr.RequestError as e:
+        transcription = f"Could not request results from Google Speech Recognition service; {e}"
+    
+    return jsonify({'transcription': transcription})
 
 @app.route('/transcription', methods=['POST'])
 def transcription():
@@ -90,5 +115,9 @@ def transcription():
     st.write(f"Transcription: {transcription}")
     return '', 204  # No Content response
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+def run_flask():
+    app.run(debug=True, port=5000, use_reloader=False)
+
+# Start the Flask server in a separate thread
+flask_thread = Thread(target=run_flask)
+flask_thread.start()

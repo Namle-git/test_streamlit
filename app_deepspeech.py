@@ -23,47 +23,52 @@ st.markdown("""
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     function tryClickButton(attempts) {
-        console.log("Attempting to find the iframe...");
-        var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
-        if (iframe) {
-            console.log("Iframe found:", iframe);
-            if (iframe.contentWindow) {
-                try {
-                    var iframeDocument = iframe.contentWindow.document;
-                    console.log("Attempting to find the button in iframe...");
-                    var button = iframeDocument.querySelector('.myButton');
+        var iframes = document.querySelectorAll('iframe'); // Select all iframes
+        var targetIframe = null;
 
-                    if (button) {
-                        console.log("Button found:", button);
-                        button.click();
-                        console.log('Button inside iframe clicked');
-                    } else if (attempts > 0) {
-                        console.log('Button not found, retrying...', attempts, 'attempts left');
-                        setTimeout(function() {
-                            tryClickButton(attempts - 1);
-                        }, 1000); // Retry after 1 second
-                    } else {
-                        console.log('Failed to click the button after multiple attempts');
-                    }
-                } catch (e) {
-                    console.log('Error accessing iframe content:', e);
+        // Loop through iframes to find the correct one
+        iframes.forEach(function(iframe) {
+            if (iframe.src.includes('streamlit_mic_recorder')) {
+                targetIframe = iframe;
+            }
+        });
+
+        if (targetIframe && targetIframe.contentWindow) {
+            try {
+                var iframeDocument = targetIframe.contentWindow.document;
+                var button = iframeDocument.querySelector('.myButton');
+
+                if (button) {
+                    button.click();
+                    console.log('Button inside iframe clicked');
+                } else if (attempts > 0) {
+                    console.log('Button not found, retrying...');
+                    setTimeout(function() {
+                        tryClickButton(attempts - 1);
+                    }, 1000); // Retry after 1 second
+                } else {
+                    console.log('Failed to click the button after 3 attempts');
                 }
-            } else {
-                console.log("Iframe contentWindow not accessible.");
+            } catch (e) {
+                console.log('Error accessing iframe content:', e);
             }
         } else if (attempts > 0) {
-            console.log('Iframe not found, retrying...', attempts, 'attempts left');
+            console.log('Iframe not loaded yet, retrying...');
             setTimeout(function() {
                 tryClickButton(attempts - 1);
             }, 1000); // Retry after 1 second
         } else {
-            console.log('Iframe not loaded after multiple attempts');
+            console.log('Iframe not loaded after 3 attempts');
         }
     }
 
-    // Initial attempt to find and click the button
-    tryClickButton(3);
-
+    // Wait for the iframe to load and then start trying to click the button
+    var iframes = document.querySelectorAll('iframe');
+    iframes.forEach(function(iframe) {
+        if (iframe.src.includes('streamlit_mic_recorder')) {
+            iframe.onload = function() {
+                tryClickButton(3);
+            };
         }
     });
 });

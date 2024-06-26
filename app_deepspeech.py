@@ -1,24 +1,23 @@
 import streamlit as st
 
-# Function to simulate button click
-def simulate_button_click():
-    js_code = """
-    <script>
-    function simulateClick() {
-        document.getElementById('clickButton').click();
-    }
-    simulateClick();
-    </script>
-    """
-    st.markdown(js_code, unsafe_allow_html=True)
-
 # Function to display confirmation text
 def button_clicked():
     st.write("The button was clicked!")
 
-# Display the button
-if st.button("Click Me!", key="clickButton"):
+# Create a hidden Streamlit button
+if st.button("Hidden Button", key="hidden_button"):
     button_clicked()
 
-# Include JavaScript to simulate button click
-simulate_button_click()
+# HTML and JavaScript to simulate button click
+html_code = """
+<script>
+function simulateClick() {
+    document.getElementById("hiddenButton").click();
+}
+window.onload = simulateClick;
+</script>
+<button id="hiddenButton" style="display:none;"></button>
+"""
+
+# Display the HTML and JavaScript
+st.markdown(html_code, unsafe_allow_html=True)

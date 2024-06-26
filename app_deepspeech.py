@@ -4,7 +4,8 @@ import streamlit.components.v1 as components
 
 st.title("AI Assistant with Automatic Speech Recognition")
 
-st.button("Hello")
+if st.button("Hello"):
+    st.write("Button clicked")
 
 # Define your JavaScript code
 js_code = """

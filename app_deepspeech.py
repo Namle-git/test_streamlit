@@ -1,31 +1,39 @@
 import streamlit as st
+import speech_recognition as sr
+import tempfile
 
-# Initialize session state for button click
-if 'button_clicked' not in st.session_state:
-    st.session_state.button_clicked = False
+# Function to record audio
+def record_audio():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.write("Recording...")
+        audio = recognizer.listen(source)
+        st.write("Recording stopped.")
+        
+        return audio
 
-# Define the callback function to update the session state
-def on_button_click():
-    st.session_state.button_clicked = True
+# Function to transcribe audio
+def transcribe_audio(audio):
+    recognizer = sr.Recognizer()
+    try:
+        st.write("Transcribing audio...")
+        text = recognizer.recognize_google(audio)
+        st.write("Transcription successful.")
+        return text
+    except sr.UnknownValueError:
+        return "Google Speech Recognition could not understand audio"
+    except sr.RequestError as e:
+        return f"Could not request results from Google Speech Recognition service; {e}"
 
-# Create a button with a callback function
-st.button("Click Me!", on_click=on_button_click, key="click_button")
+st.title("Speech Recognition App")
+st.write("Click the button below to record audio and transcribe it.")
 
-# Check the session state and display the confirmation message
-if st.session_state.button_clicked:
-    st.write("The button was clicked!")
-
-# JavaScript to simulate the button click
-simulate_click = """
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const button = document.querySelector("button[aria-label='Click Me!']");
-    if (button) {
-        button.click();
-    }
-});
-</script>
-"""
-
-# Inject the JavaScript into the app
-st.markdown(simulate_click, unsafe_allow_html=True)
+if st.button("Record Audio"):
+    audio = record_audio()
+    with tempfile.NamedTemporaryFile(delete=False) as temp_audio:
+        temp_audio.write(audio.get_wav_data())
+        st.audio(temp_audio.name, format='audio/wav')
+    
+    transcription = transcribe_audio(audio)
+    st.write("Transcription:")
+    st.write(transcription)

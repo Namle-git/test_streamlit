@@ -7,42 +7,19 @@ st.title("AI Assistant with Automatic Speech Recognition")
 if st.button("Hello"):
     st.write("Button clicked")
 
-# Define your JavaScript code
+# JavaScript to auto-click the button
 js_code = """
 <script>
-function logIframeDetails() {
-    function findAndLogIframes() {
-        let iframes = document.querySelectorAll('iframe');
-
-        if (iframes.length > 0) {
-            clearInterval(iframeInterval);
-
-            console.log('Found iframes:', iframes);
-
-            iframes.forEach(iframe => {
-                console.log('Iframe title:', iframe.title);
-                console.log('Iframe src:', iframe.src);
-            });
-        } else {
-            console.log('No iframes found yet.');
-        }
-
-        let bodyElement = document.body;
-        if (bodyElement) {
-            console.log('Current body element structure:', bodyElement.innerHTML);
-        } else {
-            console.log('Body element not found.');
-        }
-    }
-
-    let iframeInterval = setInterval(findAndLogIframes, 500);
-}
-
-document.addEventListener('DOMContentLoaded', logIframeDetails);
+document.addEventListener('DOMContentLoaded', (event) => {
+  // Find the button using its attributes
+  var button = document.querySelector('button[data-testid="baseButton-secondary"]');
+  if (button) {
+    button.click();
+  }
+});
 </script>
 """
 
-# Embed the JavaScript code into the Streamlit app
-components.html(js_code, height=0)
+# Inject the JavaScript into the Streamlit app
+components.html(js_code)
 
-st.write("Check the console for iframe details.")

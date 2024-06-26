@@ -21,48 +21,24 @@ st.write("loaded")
 # Define your JavaScript code
 js_code = """
 <script>
-// Function to parse HTML and interact with the iframe and button
-function interactWithIframe() {
-    // Function to find and interact with the iframe
-    function findIframeAndClickButton() {
+// Function to log all iframe titles and src attributes
+function logIframeDetails() {
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
         // Find all iframes on the page
         let iframes = document.querySelectorAll('iframe');
 
         console.log('Found iframes:', iframes);
 
         iframes.forEach(iframe => {
+            console.log('Iframe title:', iframe.title);
             console.log('Iframe src:', iframe.src);
-            // Check if the iframe src matches the desired value
-            if (iframe.src.includes("streamlit_mic_recorder.streamlit_mic_recorder")) {
-                // Clear the interval once the iframe is found
-                clearInterval(iframeInterval);
-
-                // Wait for the iframe to load its content
-                iframe.addEventListener('load', function() {
-                    // Get the iframe's content window and document
-                    let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-
-                    // Find the button with the class 'myButton' within the iframe
-                    let button = iframeDocument.querySelector('.myButton');
-
-                    if (button) {
-                        // Click the button
-                        button.click();
-                        console.log('Button clicked!');
-                    } else {
-                        console.error('Button with class "myButton" not found in the iframe.');
-                    }
-                });
-            }
         });
-    }
-
-    // Check for the iframe every 500ms until it is found
-    let iframeInterval = setInterval(findIframeAndClickButton, 500);
+    });
 }
 
-// Wait for the DOM to be fully loaded before running the function
-document.addEventListener('DOMContentLoaded', interactWithIframe);
+// Call the function
+logIframeDetails();
 </script>
 """
 

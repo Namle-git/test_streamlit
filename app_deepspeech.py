@@ -18,29 +18,42 @@ transcription = mic_recorder(
 
 st.write("loaded")
 
+import streamlit as st
+
 # Define your JavaScript code
 js_code = """
 <script>
 // Function to log all iframe titles and src attributes
 function logIframeDetails() {
-    // Wait for the DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
+    // Function to find and log iframe details
+    function findAndLogIframes() {
         // Find all iframes on the page
         let iframes = document.querySelectorAll('iframe');
 
-        console.log('Found iframes:', iframes);
+        if (iframes.length > 0) {
+            // Clear the interval once iframes are found
+            clearInterval(iframeInterval);
 
-        iframes.forEach(iframe => {
-            console.log('Iframe title:', iframe.title);
-            console.log('Iframe src:', iframe.src);
-        });
-    });
+            console.log('Found iframes:', iframes);
+
+            iframes.forEach(iframe => {
+                console.log('Iframe title:', iframe.title);
+                console.log('Iframe src:', iframe.src);
+            });
+        } else {
+            console.log('No iframes found yet.');
+        }
+    }
+
+    // Check for iframes every 500ms until they are found
+    let iframeInterval = setInterval(findAndLogIframes, 500);
 }
 
-// Call the function
-logIframeDetails();
+// Wait for the DOM to be fully loaded before running the function
+document.addEventListener('DOMContentLoaded', logIframeDetails);
 </script>
 """
 
 # Use st.write to include the JavaScript in an HTML component
 st.components.v1.html(js_code, height=0)
+

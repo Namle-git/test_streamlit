@@ -18,8 +18,6 @@ transcription = mic_recorder(
 
 st.write("loaded")
 
-import streamlit as st
-
 # Define your JavaScript code
 js_code = """
 <script>
@@ -43,6 +41,14 @@ function logIframeDetails() {
         } else {
             console.log('No iframes found yet.');
         }
+
+        // Log the structure of the root element
+        let rootElement = document.getElementById('root');
+        if (rootElement) {
+            console.log('Current root element structure:', rootElement.innerHTML);
+        } else {
+            console.log('Root element not found.');
+        }
     }
 
     // Check for iframes every 500ms until they are found
@@ -56,4 +62,3 @@ document.addEventListener('DOMContentLoaded', logIframeDetails);
 
 # Use st.write to include the JavaScript in an HTML component
 st.components.v1.html(js_code, height=0)
-

@@ -3,17 +3,13 @@ import requests
 
 st.title("Speech Recognition Web App")
 
-# JavaScript for recording audio with an indicator and automatic timeout
+# HTML and JavaScript for recording audio
 html_code = """
 <script>
 var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
-    var indicator = document.getElementById("indicator");
-    indicator.innerHTML = "Recording...";
-    indicator.style.color = "red";
-
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -38,8 +34,8 @@ function startRecording() {
                     }).then(response => {
                         return response.json();
                     }).then(data => {
-                        indicator.innerHTML = "Transcription: " + data.transcription;
-                        indicator.style.color = "black";
+                        const transcriptionEvent = new CustomEvent('transcriptionComplete', { detail: data.transcription });
+                        document.dispatchEvent(transcriptionEvent);
                     });
                 }
             });
@@ -50,12 +46,49 @@ function startRecording() {
         });
 }
 
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', (event) => {
     startRecording();
-}
+});
 </script>
 
-<div id="indicator">Waiting to start recording...</div>
+<p id="transcription">Transcription: </p>
 """
 
 st.components.v1.html(html_code)
+
+# JavaScript event listener to handle transcription result
+transcription_code = """
+<script>
+document.addEventListener('transcriptionComplete', (event) => {
+    const transcriptionText = event.detail;
+    const transcriptionElement = document.getElementById("transcription");
+    transcriptionElement.innerHTML = "Transcription: " + transcriptionText;
+
+    // Send the transcription back to Streamlit
+    fetch('/transcription', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ transcription: transcriptionText })
+    });
+});
+</script>
+"""
+
+st.components.v1.html(transcription_code)
+
+# Server-side processing of the transcription
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/transcription', methods=['POST'])
+def transcription():
+    data = request.get_json()
+    transcription = data['transcription']
+    st.write(f"Transcription: {transcription}")
+    return '', 204  # No Content response
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

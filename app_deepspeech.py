@@ -1,39 +1,86 @@
 import streamlit as st
+import requests
+import os
+
+st.title("Speech Recognition Web App")
+
+# HTML and JavaScript for recording audio
+html_code = """
+<script>
+var mediaRecorder;
+var audioChunks = [];
+
+function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            mediaRecorder.addEventListener("dataavailable", event => {
+                audioChunks.push(event.data);
+            });
+
+            mediaRecorder.addEventListener("stop", () => {
+                var audioBlob = new Blob(audioChunks);
+                var fileReader = new FileReader();
+                fileReader.readAsDataURL(audioBlob);
+                fileReader.onloadend = function() {
+                    var base64data = fileReader.result;
+                    fetch('/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ audio: base64data })
+                    }).then(response => {
+                        return response.json();
+                    }).then(data => {
+                        document.getElementById("transcription").innerHTML = "Transcription: " + data.transcription;
+                    });
+                }
+            });
+
+            setTimeout(() => {
+                mediaRecorder.stop();
+            }, 5000); // Record for 5 seconds
+        });
+}
+</script>
+
+<button onclick="startRecording()">Start Recording</button>
+<p id="transcription">Transcription: </p>
+"""
+
+st.components.v1.html(html_code)
+
+# Server-side processing of the audio
+from flask import Flask, request, jsonify
 import speech_recognition as sr
-import tempfile
+import base64
+from io import BytesIO
 
-# Function to record audio
-def record_audio():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.write("Recording...")
-        audio = recognizer.listen(source)
-        st.write("Recording stopped.")
-        
-        return audio
+app = Flask(__name__)
 
-# Function to transcribe audio
-def transcribe_audio(audio):
-    recognizer = sr.Recognizer()
-    try:
-        st.write("Transcribing audio...")
-        text = recognizer.recognize_google(audio)
-        st.write("Transcription successful.")
-        return text
-    except sr.UnknownValueError:
-        return "Google Speech Recognition could not understand audio"
-    except sr.RequestError as e:
-        return f"Could not request results from Google Speech Recognition service; {e}"
-
-st.title("Speech Recognition App")
-st.write("Click the button below to record audio and transcribe it.")
-
-if st.button("Record Audio"):
-    audio = record_audio()
-    with tempfile.NamedTemporaryFile(delete=False) as temp_audio:
-        temp_audio.write(audio.get_wav_data())
-        st.audio(temp_audio.name, format='audio/wav')
+@app.route('/upload', methods=['POST'])
+def upload_audio():
+    data = request.get_json()
+    audio_base64 = data['audio'].split(',')[1]  # Remove the data URL scheme
+    audio_data = base64.b64decode(audio_base64)
     
-    transcription = transcribe_audio(audio)
-    st.write("Transcription:")
-    st.write(transcription)
+    recognizer = sr.Recognizer()
+    audio_file = BytesIO(audio_data)
+    
+    with sr.AudioFile(audio_file) as source:
+        audio = recognizer.record(source)
+    
+    try:
+        transcription = recognizer.recognize_google(audio)
+    except sr.UnknownValueError:
+        transcription = "Google Speech Recognition could not understand audio"
+    except sr.RequestError as e:
+        transcription = f"Could not request results from Google Speech Recognition service; {e}"
+    
+    return jsonify({'transcription': transcription})
+
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -21,36 +21,39 @@ st.write("loaded")
 # Define your JavaScript code
 js_code = """
 <script>
-// Function to log all top-level elements and their children
-function logTopLevelElements() {
-    // Wait for the DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get all top-level elements in the body
-        let topElements = document.body.children;
+function logIframeDetails() {
+    function findAndLogIframes() {
+        let iframes = document.querySelectorAll('iframe');
 
-        console.log('Top-level elements:', topElements);
+        if (iframes.length > 0) {
+            clearInterval(iframeInterval);
 
-        // Log details of each top-level element and its children
-        Array.from(topElements).forEach(element => {
-            console.log('Element:', element);
-            console.log('Element HTML:', element.outerHTML);
+            console.log('Found iframes:', iframes);
 
-            // Log children of each top-level element
-            let children = element.children;
-            console.log('Children of element:', children);
-
-            Array.from(children).forEach(child => {
-                console.log('Child element:', child);
-                console.log('Child element HTML:', child.outerHTML);
+            iframes.forEach(iframe => {
+                console.log('Iframe title:', iframe.title);
+                console.log('Iframe src:', iframe.src);
             });
-        });
-    });
+        } else {
+            console.log('No iframes found yet.');
+        }
+
+        let bodyElement = document.body;
+        if (bodyElement) {
+            console.log('Current body element structure:', bodyElement.innerHTML);
+        } else {
+            console.log('Body element not found.');
+        }
+    }
+
+    let iframeInterval = setInterval(findAndLogIframes, 500);
 }
 
-// Call the function
-logTopLevelElements();
+document.addEventListener('DOMContentLoaded', logIframeDetails);
 </script>
 """
 
-# Use st.write to include the JavaScript in an HTML component
-st.components.v1.html(js_code, height=0)
+# Embed the JavaScript code into the Streamlit app
+components.html(js_code, height=0)
+
+st.write("Check the console for iframe details.")

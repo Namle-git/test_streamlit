@@ -5,7 +5,6 @@ import streamlit.components.v1 as components
 st.title("AI Assistant with Automatic Speech Recognition")
 
 # Function to automatically record and transcribe audio
-
 transcription = mic_recorder(
     start_prompt="Record",
     stop_prompt="Stop",
@@ -26,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (iframe && iframe.contentWindow) {
             try {
                 var iframeDocument = iframe.contentWindow.document;
-                var button = iframeDocument.querySelector('.myButton');
+                var button = iframeDocument.querySelector('button');
 
                 if (button) {
                     button.click();
@@ -60,4 +59,3 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 """, unsafe_allow_html=True)
-

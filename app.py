@@ -3,13 +3,17 @@ import requests
 
 st.title("Speech Recognition Web App")
 
-# HTML and JavaScript for recording audio
+# JavaScript for recording audio with an indicator and automatic timeout
 html_code = """
 <script>
 var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
+    var indicator = document.getElementById("indicator");
+    indicator.innerHTML = "Recording...";
+    indicator.style.color = "red";
+
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -34,7 +38,8 @@ function startRecording() {
                     }).then(response => {
                         return response.json();
                     }).then(data => {
-                        document.getElementById("transcription").innerHTML = "Transcription: " + data.transcription;
+                        indicator.innerHTML = "Transcription: " + data.transcription;
+                        indicator.style.color = "black";
                     });
                 }
             });
@@ -44,10 +49,13 @@ function startRecording() {
             }, 5000); // Record for 5 seconds
         });
 }
+
+window.onload = function() {
+    startRecording();
+}
 </script>
 
-<button onclick="startRecording()">Start Recording</button>
-<p id="transcription">Transcription: </p>
+<div id="indicator">Waiting to start recording...</div>
 """
 
 st.components.v1.html(html_code)

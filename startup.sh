@@ -10,4 +10,4 @@ ldconfig
 
 python flask_server.py
 
-streamlit run app_deepspeech.py --server.port $PORT 
+streamlit run app.py --server.port $PORT 

@@ -32,26 +32,41 @@ html_code = """
     <title>Simulate Button Click in Iframe</title>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Wait for the iframe to load
+            function tryClickButton(attempts) {
+                var iframe = document.getElementById('targetIframe');
+                if (iframe && iframe.contentDocument) {
+                    try {
+                        var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                        var button = iframeDocument.querySelector('.myButton');
+
+                        if (button) {
+                            button.click();
+                            console.log('Button inside iframe clicked');
+                        } else if (attempts > 0) {
+                            console.log('Button not found, retrying...');
+                            setTimeout(function() {
+                                tryClickButton(attempts - 1);
+                            }, 1000); // Retry after 1 second
+                        } else {
+                            console.log('Failed to click the button after 3 attempts');
+                        }
+                    } catch (e) {
+                        console.log('Error accessing iframe content:', e);
+                    }
+                } else if (attempts > 0) {
+                    console.log('Iframe not loaded yet, retrying...');
+                    setTimeout(function() {
+                        tryClickButton(attempts - 1);
+                    }, 1000); // Retry after 1 second
+                } else {
+                    console.log('Iframe not loaded after 3 attempts');
+                }
+            }
+
+            // Wait for the iframe to load and then start trying to click the button
             var iframe = document.getElementById('targetIframe');
             iframe.onload = function() {
-                try {
-                    // Access the iframe's content
-                    var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-
-                    // Find the button inside the iframe by class name
-                    var button = iframeDocument.querySelector('.myButton');
-
-                    if (button) {
-                        // Simulate a click on the button
-                        button.click();
-                        console.log('Button inside iframe clicked');
-                    } else {
-                        console.log('Button with class "myButton" not found in iframe');
-                    }
-                } catch (e) {
-                    console.log('Error accessing iframe content:', e);
-                }
+                tryClickButton(3);
             };
         });
     </script>

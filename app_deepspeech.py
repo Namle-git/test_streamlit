@@ -57,7 +57,7 @@ html_code = """
     </script>
 </head>
 <body>
-    <iframe id="targetIframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-write; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" height="0" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads" scrolling="no" src="https://simonaireceptionistchatbot.azurewebsites.net:443/component/streamlit_mic_recorder.streamlit_mic_recorder/index.html?streamlitUrl=https%3A%2F%2Fsimonaireceptionistchatbot.azurewebsites.net%2F" style="color-scheme: normal; display: initial;" title="streamlit_mic_recorder.streamlit_mic_recorder" width="0"></iframe>
+    <iframe id="targetIframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-write; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" height="0" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads" scrolling="no" src="https://simonaireceptionistchatbot.azurewebsites.net/component/streamlit_mic_recorder.streamlit_mic_recorder/index.html?streamlitUrl=https%3A%2F%2Fsimonaireceptionistchatbot.azurewebsites.net%2F" style="display: none;" title="streamlit_mic_recorder.streamlit_mic_recorder" width="0"></iframe>
 </body>
 </html>
 """

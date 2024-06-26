@@ -25,32 +25,36 @@ js_code = """
 function interactWithIframe() {
     // Function to find and interact with the iframe
     function findIframeAndClickButton() {
-        // Find the iframe with the specific src attribute
-        let iframe = document.querySelector('iframe[src="https://simonaireceptionistchatbot.azurewebsites.net:443/component/streamlit_mic_recorder.streamlit_mic_recorder/index.html?streamlitUrl=https%3A%2F%2Fsimonaireceptionistchatbot.azurewebsites.net%2F"]');
+        // Find all iframes on the page
+        let iframes = document.querySelectorAll('iframe');
 
-        if (iframe) {
-            // Clear the interval once the iframe is found
-            clearInterval(iframeInterval);
-            
-            // Wait for the iframe to load its content
-            iframe.addEventListener('load', function() {
-                // Get the iframe's content window and document
-                let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+        console.log('Found iframes:', iframes);
 
-                // Find the button with the class 'myButton' within the iframe
-                let button = iframeDocument.querySelector('.myButton');
+        iframes.forEach(iframe => {
+            console.log('Iframe src:', iframe.src);
+            // Check if the iframe src matches the desired value
+            if (iframe.src.includes("streamlit_mic_recorder.streamlit_mic_recorder")) {
+                // Clear the interval once the iframe is found
+                clearInterval(iframeInterval);
 
-                if (button) {
-                    // Click the button
-                    button.click();
-                    console.log('Button clicked!');
-                } else {
-                    console.error('Button with class "myButton" not found in the iframe.');
-                }
-            });
-        } else {
-            console.error('Iframe with the specified src not found.');
-        }
+                // Wait for the iframe to load its content
+                iframe.addEventListener('load', function() {
+                    // Get the iframe's content window and document
+                    let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+
+                    // Find the button with the class 'myButton' within the iframe
+                    let button = iframeDocument.querySelector('.myButton');
+
+                    if (button) {
+                        // Click the button
+                        button.click();
+                        console.log('Button clicked!');
+                    } else {
+                        console.error('Button with class "myButton" not found in the iframe.');
+                    }
+                });
+            }
+        });
     }
 
     // Check for the iframe every 500ms until it is found

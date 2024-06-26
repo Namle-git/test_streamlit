@@ -22,7 +22,6 @@ def automatic_recording_and_transcription(duration: int = 5):
 # Start automatic recording and transcription
 transcription = automatic_recording_and_transcription(duration=5)
 
-# JavaScript to interact with the button inside the iframe
 st.markdown("""
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -30,23 +29,24 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log("Attempting to find the iframe...");
         var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
         if (iframe) {
-            console.log("Iframe found, attempting to access content...");
+            console.log("Iframe found:", iframe);
             if (iframe.contentWindow) {
                 try {
                     var iframeDocument = iframe.contentWindow.document;
+                    console.log("Attempting to find the button in iframe...");
                     var button = iframeDocument.querySelector('.myButton');
 
                     if (button) {
-                        console.log("Button found, clicking the button...");
+                        console.log("Button found:", button);
                         button.click();
                         console.log('Button inside iframe clicked');
                     } else if (attempts > 0) {
-                        console.log('Button not found, retrying...');
+                        console.log('Button not found, retrying...', attempts, 'attempts left');
                         setTimeout(function() {
                             tryClickButton(attempts - 1);
                         }, 1000); // Retry after 1 second
                     } else {
-                        console.log('Failed to click the button after 3 attempts');
+                        console.log('Failed to click the button after multiple attempts');
                     }
                 } catch (e) {
                     console.log('Error accessing iframe content:', e);
@@ -55,12 +55,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.log("Iframe contentWindow not accessible.");
             }
         } else if (attempts > 0) {
-            console.log('Iframe not found, retrying...');
+            console.log('Iframe not found, retrying...', attempts, 'attempts left');
             setTimeout(function() {
                 tryClickButton(attempts - 1);
             }, 1000); // Retry after 1 second
         } else {
-            console.log('Iframe not loaded after 3 attempts');
+            console.log('Iframe not loaded after multiple attempts');
         }
     }
 

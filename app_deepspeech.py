@@ -23,12 +23,15 @@ js_code = """
 <script>
 // Function to parse HTML and interact with the iframe and button
 function interactWithIframe() {
-    // Wait for the DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
+    // Function to find and interact with the iframe
+    function findIframeAndClickButton() {
         // Find the iframe with the specific title
         let iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
 
         if (iframe) {
+            // Clear the interval once the iframe is found
+            clearInterval(iframeInterval);
+            
             // Wait for the iframe to load its content
             iframe.addEventListener('load', function() {
                 // Get the iframe's content window and document
@@ -48,14 +51,16 @@ function interactWithIframe() {
         } else {
             console.error('Iframe with title "streamlit_mic_recorder.streamlit_mic_recorder" not found.');
         }
-    });
+    }
+
+    // Check for the iframe every 500ms until it is found
+    let iframeInterval = setInterval(findIframeAndClickButton, 500);
 }
 
-// Call the function
-interactWithIframe();
+// Wait for the DOM to be fully loaded before running the function
+document.addEventListener('DOMContentLoaded', interactWithIframe);
 </script>
 """
 
 # Use st.write to include the JavaScript in an HTML component
 st.components.v1.html(js_code, height=0)
-

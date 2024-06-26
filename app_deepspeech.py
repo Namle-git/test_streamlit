@@ -25,8 +25,8 @@ js_code = """
 function interactWithIframe() {
     // Function to find and interact with the iframe
     function findIframeAndClickButton() {
-        // Find the iframe with the specific title
-        let iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
+        // Find the iframe with the specific src attribute
+        let iframe = document.querySelector('iframe[src="https://simonaireceptionistchatbot.azurewebsites.net:443/component/streamlit_mic_recorder.streamlit_mic_recorder/index.html?streamlitUrl=https%3A%2F%2Fsimonaireceptionistchatbot.azurewebsites.net%2F"]');
 
         if (iframe) {
             // Clear the interval once the iframe is found
@@ -49,7 +49,7 @@ function interactWithIframe() {
                 }
             });
         } else {
-            console.error('Iframe with title "streamlit_mic_recorder.streamlit_mic_recorder" not found.');
+            console.error('Iframe with the specified src not found.');
         }
     }
 

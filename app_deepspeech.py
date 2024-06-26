@@ -18,8 +18,6 @@ transcription = speech_to_text(
     key="mic_recorder"
 )
 
-
-# JavaScript to interact with the button inside the iframe
 # JavaScript to interact with the button inside the iframe
 st.markdown("""
 <script>

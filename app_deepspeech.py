@@ -15,3 +15,47 @@ transcription = mic_recorder(
     kwargs={},
     key="mic_recorder"
 )
+
+st.write("loaded")
+
+# Define your JavaScript code
+js_code = """
+<script>
+// Function to parse HTML and interact with the iframe and button
+function interactWithIframe() {
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find the iframe with the specific title
+        let iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
+
+        if (iframe) {
+            // Wait for the iframe to load its content
+            iframe.addEventListener('load', function() {
+                // Get the iframe's content window and document
+                let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+
+                // Find the button with the class 'myButton' within the iframe
+                let button = iframeDocument.querySelector('.myButton');
+
+                if (button) {
+                    // Click the button
+                    button.click();
+                    console.log('Button clicked!');
+                } else {
+                    console.error('Button with class "myButton" not found in the iframe.');
+                }
+            });
+        } else {
+            console.error('Iframe with title "streamlit_mic_recorder.streamlit_mic_recorder" not found.');
+        }
+    });
+}
+
+// Call the function
+interactWithIframe();
+</script>
+"""
+
+# Use st.write to include the JavaScript in an HTML component
+st.components.v1.html(js_code, height=0)
+

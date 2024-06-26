@@ -1,12 +1,12 @@
 import streamlit as st
-from streamlit_mic_recorder import speech_to_text
+from streamlit_mic_recorder import mic_recorder
 import streamlit.components.v1 as components
 
 st.title("AI Assistant with Automatic Speech Recognition")
 
 # Function to automatically record and transcribe audio
 
-transcription = speech_to_text(
+transcription = mic_recorder(
     language='en',
     start_prompt="Record",
     stop_prompt="Stop",
@@ -62,8 +62,3 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 """, unsafe_allow_html=True)
 
-# Display the transcription
-if transcription:
-    st.write(f"Transcription: {transcription}")
-else:
-    st.write("No transcription available.")

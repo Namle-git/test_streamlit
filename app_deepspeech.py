@@ -1,23 +1,28 @@
 import streamlit as st
 
-# Function to display confirmation text
-def button_clicked():
+# Initialize session state for button click
+if 'button_clicked' not in st.session_state:
+    st.session_state.button_clicked = False
+
+# Define the callback function to update the session state
+def on_button_click():
+    st.session_state.button_clicked = True
+
+# Create a button with a callback function
+st.button("Click Me!", on_click=on_button_click, key="click_button")
+
+# Check the session state and display the confirmation message
+if st.session_state.button_clicked:
     st.write("The button was clicked!")
 
-# Create a hidden Streamlit button
-if st.button("Hidden Button", key="hidden_button"):
-    button_clicked()
-
-# HTML and JavaScript to simulate button click
-html_code = """
+# JavaScript to simulate the button click
+simulate_click = """
 <script>
-function simulateClick() {
-    document.getElementById("hiddenButton").click();
-}
-window.onload = simulateClick;
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector("button[kind='primary']").click();
+});
 </script>
-<button id="hiddenButton" style="display:none;"></button>
 """
 
-# Display the HTML and JavaScript
-st.markdown(html_code, unsafe_allow_html=True)
+# Inject the JavaScript into the app
+st.markdown(simulate_click, unsafe_allow_html=True)

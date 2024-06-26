@@ -30,10 +30,6 @@ html_code = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulate Button Click in Iframe</title>
-</head>
-<body>
-    <iframe id="targetIframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-write; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" height="39" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads" scrolling="no" src="https://simonaireceptionistchatbot.azurewebsites.net:443/component/streamlit_mic_recorder.streamlit_mic_recorder/index.html?streamlitUrl=https%3A%2F%2Fsimonaireceptionistchatbot.azurewebsites.net%2F" style="color-scheme: normal; display: initial;" title="streamlit_mic_recorder.streamlit_mic_recorder" width="696"></iframe>
-
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Wait for the iframe to load
@@ -59,12 +55,15 @@ html_code = """
             };
         });
     </script>
+</head>
+<body>
+    <iframe id="targetIframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-write; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" height="0" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads" scrolling="no" src="https://simonaireceptionistchatbot.azurewebsites.net:443/component/streamlit_mic_recorder.streamlit_mic_recorder/index.html?streamlitUrl=https%3A%2F%2Fsimonaireceptionistchatbot.azurewebsites.net%2F" style="color-scheme: normal; display: initial;" title="streamlit_mic_recorder.streamlit_mic_recorder" width="0"></iframe>
 </body>
 </html>
 """
 
 # Embed the HTML and JavaScript in the Streamlit app
-components.html(html_code, height=400)
+components.html(html_code, height=0, width=0)
 
 # Display the transcription
 if transcription:

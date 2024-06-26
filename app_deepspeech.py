@@ -18,24 +18,14 @@ transcription = speech_to_text(
     key="mic_recorder"
 )
 
-# JavaScript to interact with the button inside the iframe
 st.markdown("""
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     function tryClickButton(attempts) {
-        var iframes = document.querySelectorAll('iframe'); // Select all iframes
-        var targetIframe = null;
-
-        // Loop through iframes to find the correct one
-        iframes.forEach(function(iframe) {
-            if (iframe.src.includes('streamlit_mic_recorder')) {
-                targetIframe = iframe;
-            }
-        });
-
-        if (targetIframe && targetIframe.contentWindow) {
+        var iframe = document.querySelector('iframe[src*="streamlit_mic_recorder"]');
+        if (iframe && iframe.contentWindow) {
             try {
-                var iframeDocument = targetIframe.contentWindow.document;
+                var iframeDocument = iframe.contentWindow.document;
                 var button = iframeDocument.querySelector('.myButton');
 
                 if (button) {
@@ -63,14 +53,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Wait for the iframe to load and then start trying to click the button
-    var iframes = document.querySelectorAll('iframe');
-    iframes.forEach(function(iframe) {
-        if (iframe.src.includes('streamlit_mic_recorder')) {
-            iframe.onload = function() {
-                tryClickButton(3);
-            };
-        }
-    });
+    var iframe = document.querySelector('iframe[src*="streamlit_mic_recorder"]');
+    iframe.onload = function() {
+        tryClickButton(3);
+    };
 });
 </script>
 """, unsafe_allow_html=True)

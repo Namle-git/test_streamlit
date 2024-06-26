@@ -19,7 +19,10 @@ if st.session_state.button_clicked:
 simulate_click = """
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelector("button[kind='primary']").click();
+    const button = document.querySelector("button[aria-label='Click Me!']");
+    if (button) {
+        button.click();
+    }
 });
 </script>
 """

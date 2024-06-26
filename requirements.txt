@@ -3,4 +3,3 @@ streamlit-mic-recorder
 speechrecognition
 pydub
 numpy
-pyaudio

@@ -27,7 +27,7 @@ st.markdown("""
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     function tryClickButton(attempts) {
-        var iframe = document.querySelector('iframe[src*="streamlit_mic_recorder"]');
+        var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
         if (iframe && iframe.contentWindow) {
             try {
                 var iframeDocument = iframe.contentWindow.document;
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Wait for the iframe to load and then start trying to click the button
-    var iframe = document.querySelector('iframe[src*="streamlit_mic_recorder"]');
+    var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
     iframe.onload = function() {
         tryClickButton(3);
     };

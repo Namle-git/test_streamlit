@@ -5,23 +5,21 @@ import streamlit.components.v1 as components
 st.title("AI Assistant with Automatic Speech Recognition")
 
 # Function to automatically record and transcribe audio
-def automatic_recording_and_transcription(duration: int = 5):
-    text = speech_to_text(
-        language='en',
-        start_prompt="Record",
-        stop_prompt="Stop",
-        just_once=True,
-        use_container_width=True,
-        callback=None,
-        args=(),
-        kwargs={},
-        key="mic_recorder"
-    )
-    return text
 
-# Start automatic recording and transcription
-transcription = automatic_recording_and_transcription(duration=5)
+transcription = speech_to_text(
+    language='en',
+    start_prompt="Record",
+    stop_prompt="Stop",
+    just_once=True,
+    use_container_width=True,
+    callback=None,
+    args=(),
+    kwargs={},
+    key="mic_recorder"
+)
 
+
+# JavaScript to interact with the button inside the iframe
 st.markdown("""
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -64,17 +62,16 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Wait for the iframe to load and then start trying to click the button
-    var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
-    if (iframe) {
-        iframe.onload = function() {
-            console.log("Iframe loaded, starting attempts to click the button...");
+    // Initial attempt to find and click the button
+    tryClickButton(3);
+
+    // Additional listener to handle iframe load event in case it's not loaded yet
+    document.addEventListener("readystatechange", function() {
+        if (document.readyState === "complete") {
+            console.log("Document readyState complete, attempting to click the button...");
             tryClickButton(3);
-        };
-    } else {
-        console.log("Initial iframe not found, starting attempts...");
-        tryClickButton(3);
-    }
+        }
+    });
 });
 </script>
 """, unsafe_allow_html=True)

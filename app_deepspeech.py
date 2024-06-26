@@ -26,7 +26,7 @@ st.markdown("""
 document.addEventListener("DOMContentLoaded", function() {
     function tryClickButton(attempts) {
         console.log("Attempting to find the iframe...");
-        var iframe = document.querySelector('iframe[src*="streamlit_mic_recorder.streamlit_mic_recorder"]');
+        var iframe = document.querySelector('iframe[title="streamlit_mic_recorder.streamlit_mic_recorder"]');
         if (iframe) {
             console.log("Iframe found:", iframe);
             if (iframe.contentWindow) {
@@ -66,11 +66,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Initial attempt to find and click the button
     tryClickButton(3);
 
-    // Additional listener to handle document readyState
-    document.addEventListener("readystatechange", function() {
-        if (document.readyState === "complete") {
-            console.log("Document readyState complete, attempting to click the button...");
-            tryClickButton(3);
         }
     });
 });

@@ -21,42 +21,34 @@ st.write("loaded")
 # Define your JavaScript code
 js_code = """
 <script>
-// Function to log all iframe titles and src attributes
-function logIframeDetails() {
-    // Function to find and log iframe details
-    function findAndLogIframes() {
-        // Find all iframes on the page
-        let iframes = document.querySelectorAll('iframe');
+// Function to log all top-level elements and their children
+function logTopLevelElements() {
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all top-level elements in the body
+        let topElements = document.body.children;
 
-        if (iframes.length > 0) {
-            // Clear the interval once iframes are found
-            clearInterval(iframeInterval);
+        console.log('Top-level elements:', topElements);
 
-            console.log('Found iframes:', iframes);
+        // Log details of each top-level element and its children
+        Array.from(topElements).forEach(element => {
+            console.log('Element:', element);
+            console.log('Element HTML:', element.outerHTML);
 
-            iframes.forEach(iframe => {
-                console.log('Iframe title:', iframe.title);
-                console.log('Iframe src:', iframe.src);
+            // Log children of each top-level element
+            let children = element.children;
+            console.log('Children of element:', children);
+
+            Array.from(children).forEach(child => {
+                console.log('Child element:', child);
+                console.log('Child element HTML:', child.outerHTML);
             });
-        } else {
-            console.log('No iframes found yet.');
-        }
-
-        // Log the structure of the root element
-        let rootElement = document.getElementById('root');
-        if (rootElement) {
-            console.log('Current root element structure:', rootElement.innerHTML);
-        } else {
-            console.log('Root element not found.');
-        }
-    }
-
-    // Check for iframes every 500ms until they are found
-    let iframeInterval = setInterval(findAndLogIframes, 500);
+        });
+    });
 }
 
-// Wait for the DOM to be fully loaded before running the function
-document.addEventListener('DOMContentLoaded', logIframeDetails);
+// Call the function
+logTopLevelElements();
 </script>
 """
 

@@ -102,12 +102,16 @@ document.addEventListener('transcriptionComplete', (event) => {
 
 st.components.v1.html(transcription_code)
 
-# Flask server setup
 app = Flask(__name__)
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 @app.route('/upload', methods=['POST'])
 def upload_audio():
     data = request.get_json()
+    logging.debug(f"Received data: {data}")
+    
     audio_base64 = data['audio'].split(',')[1]  # Remove the data URL scheme
     audio_data = base64.b64decode(audio_base64)
     
@@ -119,10 +123,13 @@ def upload_audio():
     
     try:
         transcription = recognizer.recognize_google(audio)
+        logging.debug(f"Transcription: {transcription}")
     except sr.UnknownValueError:
         transcription = "Google Speech Recognition could not understand audio"
+        logging.error("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
         transcription = f"Could not request results from Google Speech Recognition service; {e}"
+        logging.error(f"Could not request results from Google Speech Recognition service; {e}")
     
     return jsonify({'transcription': transcription})
 
@@ -130,6 +137,7 @@ def upload_audio():
 def transcription():
     data = request.get_json()
     transcription = data['transcription']
+    logging.debug(f"Received transcription: {transcription}")
     st.write(f"Transcription: {transcription}")
     return '', 204  # No Content response
 

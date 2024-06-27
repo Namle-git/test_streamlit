@@ -78,6 +78,28 @@ document.addEventListener('DOMContentLoaded', (event) => {
 <p id="transcription">Transcription: </p>
 """
 
+st.components.v1.html(html_code)
+
+# JavaScript event listener to handle transcription result
+transcription_code = """
+<script>
+document.addEventListener('transcriptionComplete', (event) => {
+    const transcriptionText = event.detail;
+    const transcriptionElement = document.getElementById("transcription");
+    transcriptionElement.innerHTML = "Transcription: " + transcriptionText;
+
+    // Send the transcription back to Streamlit
+    fetch('/transcription', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ transcription: transcriptionText })
+    });
+});
+</script>
+"""
+
 st.components.v1.html(transcription_code)
 
 # Flask server setup

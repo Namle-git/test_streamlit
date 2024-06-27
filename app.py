@@ -1,11 +1,7 @@
 import streamlit as st
-from flask import Flask, request, jsonify
 import speech_recognition as sr
 import base64
 from io import BytesIO
-from threading import Thread
-import requests
-import logging
 
 # Initialize Streamlit app
 st.title("Speech Recognition Web App")
@@ -17,10 +13,6 @@ var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
-    // Change the UI to indicate recording has started
-    document.getElementById("status").innerText = "Recording...";
-    document.getElementById("status").style.color = "red";
-
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -36,31 +28,18 @@ function startRecording() {
                 fileReader.readAsDataURL(audioBlob);
                 fileReader.onloadend = function() {
                     var base64data = fileReader.result;
-
-                    // Play back the recorded audio
-                    var audioURL = URL.createObjectURL(audioBlob);
-                    var audio = new Audio(audioURL);
-                    audio.controls = true;
-                    document.getElementById("playback").innerHTML = "";
-                    document.getElementById("playback").appendChild(audio);
-
-                    fetch('http://localhost:5000/upload', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ audio: base64data })
-                    }).then(response => {
-                        return response.json();
-                    }).then(data => {
-                        const transcriptionEvent = new CustomEvent('transcriptionComplete', { detail: data.transcription });
-                        document.dispatchEvent(transcriptionEvent);
-                    });
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/transcribe", true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            var json = JSON.parse(xhr.responseText);
+                            const transcriptionEvent = new CustomEvent('transcriptionComplete', { detail: json.transcription });
+                            document.dispatchEvent(transcriptionEvent);
+                        }
+                    };
+                    xhr.send(JSON.stringify({ audio: base64data }));
                 }
-
-                // Change the UI to indicate recording has stopped
-                document.getElementById("status").innerText = "Recording stopped";
-                document.getElementById("status").style.color = "black";
             });
 
             setTimeout(() => {
@@ -74,8 +53,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 </script>
 
-<p id="status">Status: Not recording</p>
-<div id="playback"></div>
 <p id="transcription">Transcription: </p>
 """
 
@@ -90,32 +67,19 @@ document.addEventListener('transcriptionComplete', (event) => {
     transcriptionElement.innerHTML = "Transcription: " + transcriptionText;
 
     // Send the transcription back to Streamlit
-    fetch('/transcription', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ transcription: transcriptionText })
-    });
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/update_transcription", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({ transcription: transcriptionText }));
 });
 </script>
 """
 
 st.components.v1.html(transcription_code)
 
-app = Flask(__name__)
-
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
-
-@app.route('/upload', methods=['POST'])
-def upload_audio():
-    data = request.get_json()
-    logging.debug(f"Received data: {data}")
-    
-    audio_base64 = data['audio'].split(',')[1]  # Remove the data URL scheme
-    audio_data = base64.b64decode(audio_base64)
-    
+# Function to handle transcription in Streamlit
+def transcribe_audio(audio_base64):
+    audio_data = base64.b64decode(audio_base64.split(',')[1])  # Remove the data URL scheme
     recognizer = sr.Recognizer()
     audio_file = BytesIO(audio_data)
     
@@ -124,27 +88,22 @@ def upload_audio():
     
     try:
         transcription = recognizer.recognize_google(audio)
-        logging.debug(f"Transcription: {transcription}")
     except sr.UnknownValueError:
         transcription = "Google Speech Recognition could not understand audio"
-        logging.error("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
         transcription = f"Could not request results from Google Speech Recognition service; {e}"
-        logging.error(f"Could not request results from Google Speech Recognition service; {e}")
     
-    return jsonify({'transcription': transcription})
+    return transcription
 
-@app.route('/transcription', methods=['POST'])
-def transcription():
-    data = request.get_json()
-    transcription = data['transcription']
-    logging.debug(f"Received transcription: {transcription}")
-    st.write(f"Transcription: {transcription}")
-    return '', 204  # No Content response
+# Endpoint to handle the audio upload and transcription
+if st.experimental_get_query_params().get("transcribe"):
+    import json
+    data = json.loads(st.experimental_get_query_params().get("transcribe")[0])
+    transcription = transcribe_audio(data['audio'])
+    st.experimental_set_query_params(transcription=transcription)
 
-def run_flask():
-    app.run(debug=True, port=5000, use_reloader=False)
-
-# Start the Flask server in a separate thread
-flask_thread = Thread(target=run_flask)
-flask_thread.start()
+# Endpoint to update transcription
+if st.experimental_get_query_params().get("update_transcription"):
+    import json
+    data = json.loads(st.experimental_get_query_params().get("update_transcription")[0])
+    st.write(f"Transcription: {data['transcription']}")

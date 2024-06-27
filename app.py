@@ -5,6 +5,7 @@ import base64
 from io import BytesIO
 from threading import Thread
 import requests
+import logging
 
 # Initialize Streamlit app
 st.title("Speech Recognition Web App")

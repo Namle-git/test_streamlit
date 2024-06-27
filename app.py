@@ -100,7 +100,7 @@ if st.query_params().get("transcribe"):
     import json
     data = json.loads(st.query_params().get("transcribe")[0])
     transcription = transcribe_audio(data['audio'])
-    st.query_params(transcription=transcription)
+    st.set_query_params(transcription=transcription)
 
 # Endpoint to update transcription
 if st.query_params().get("update_transcription"):

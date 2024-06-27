@@ -16,6 +16,10 @@ var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
+    // Change the UI to indicate recording has started
+    document.getElementById("status").innerText = "Recording...";
+    document.getElementById("status").style.color = "red";
+
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -31,6 +35,14 @@ function startRecording() {
                 fileReader.readAsDataURL(audioBlob);
                 fileReader.onloadend = function() {
                     var base64data = fileReader.result;
+
+                    // Play back the recorded audio
+                    var audioURL = URL.createObjectURL(audioBlob);
+                    var audio = new Audio(audioURL);
+                    audio.controls = true;
+                    document.getElementById("playback").innerHTML = "";
+                    document.getElementById("playback").appendChild(audio);
+
                     fetch('http://localhost:5000/upload', {
                         method: 'POST',
                         headers: {
@@ -44,6 +56,10 @@ function startRecording() {
                         document.dispatchEvent(transcriptionEvent);
                     });
                 }
+
+                // Change the UI to indicate recording has stopped
+                document.getElementById("status").innerText = "Recording stopped";
+                document.getElementById("status").style.color = "black";
             });
 
             setTimeout(() => {
@@ -57,29 +73,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 </script>
 
+<p id="status">Status: Not recording</p>
+<div id="playback"></div>
 <p id="transcription">Transcription: </p>
-"""
-
-st.components.v1.html(html_code)
-
-# JavaScript event listener to handle transcription result
-transcription_code = """
-<script>
-document.addEventListener('transcriptionComplete', (event) => {
-    const transcriptionText = event.detail;
-    const transcriptionElement = document.getElementById("transcription");
-    transcriptionElement.innerHTML = "Transcription: " + transcriptionText;
-
-    // Send the transcription back to Streamlit
-    fetch('/transcription', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ transcription: transcriptionText })
-    });
-});
-</script>
 """
 
 st.components.v1.html(transcription_code)

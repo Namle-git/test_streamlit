@@ -96,14 +96,14 @@ def transcribe_audio(audio_base64):
     return transcription
 
 # Endpoint to handle the audio upload and transcription
-if st.experimental_get_query_params().get("transcribe"):
+if st.query_params().get("transcribe"):
     import json
-    data = json.loads(st.experimental_get_query_params().get("transcribe")[0])
+    data = json.loads(st.query_params().get("transcribe")[0])
     transcription = transcribe_audio(data['audio'])
-    st.experimental_set_query_params(transcription=transcription)
+    st.query_params(transcription=transcription)
 
 # Endpoint to update transcription
-if st.experimental_get_query_params().get("update_transcription"):
+if st.query_params().get("update_transcription"):
     import json
-    data = json.loads(st.experimental_get_query_params().get("update_transcription")[0])
+    data = json.loads(st.query_params().get("update_transcription")[0])
     st.write(f"Transcription: {data['transcription']}")

@@ -2,7 +2,6 @@ import streamlit as st
 import speech_recognition as sr
 import base64
 from io import BytesIO
-import json
 
 # Initialize Streamlit app
 st.title("Speech Recognition Web App")
@@ -14,9 +13,6 @@ var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
-    document.getElementById("status").innerText = "Recording...";
-    document.getElementById("status").style.color = "red";
-    
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -32,17 +28,7 @@ function startRecording() {
                 fileReader.readAsDataURL(audioBlob);
                 fileReader.onloadend = function() {
                     var base64data = fileReader.result;
-                    const xhr = new XMLHttpRequest();
-                    xhr.open("POST", "/upload_audio", true);
-                    xhr.setRequestHeader("Content-Type", "application/json");
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            var json = JSON.parse(xhr.responseText);
-                            const transcriptionEvent = new CustomEvent('transcriptionComplete', { detail: json.transcription });
-                            document.dispatchEvent(transcriptionEvent);
-                        }
-                    };
-                    xhr.send(JSON.stringify({ audio: base64data }));
+                    document.querySelector('body').dispatchEvent(new CustomEvent('audioBlobReady', { detail: base64data }));
                 }
             });
 
@@ -54,6 +40,22 @@ function startRecording() {
 
 document.addEventListener('DOMContentLoaded', (event) => {
     startRecording();
+});
+
+document.querySelector('body').addEventListener('audioBlobReady', (event) => {
+    const base64data = event.detail;
+    fetch('/transcription', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ audio: base64data })
+    }).then(response => {
+        return response.json();
+    }).then(data => {
+        const transcriptionEvent = new CustomEvent('transcriptionComplete', { detail: data.transcription });
+        document.dispatchEvent(transcriptionEvent);
+    });
 });
 </script>
 
@@ -71,15 +73,24 @@ document.addEventListener('transcriptionComplete', (event) => {
     const transcriptionText = event.detail;
     const transcriptionElement = document.getElementById("transcription");
     transcriptionElement.innerHTML = "Transcription: " + transcriptionText;
+
+    // Send the transcription back to Streamlit
+    fetch('/transcription', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ transcription: transcriptionText })
+    });
 });
 </script>
 """
 
 st.components.v1.html(transcription_code)
 
-# Function to handle transcription in Streamlit
 def transcribe_audio(audio_base64):
-    audio_data = base64.b64decode(audio_base64.split(',')[1])  # Remove the data URL scheme
+    audio_data = base64.b64decode(audio_base64.split(',')[1])
+    
     recognizer = sr.Recognizer()
     audio_file = BytesIO(audio_data)
     
@@ -95,22 +106,54 @@ def transcribe_audio(audio_base64):
     
     return transcription
 
-# Endpoint to handle audio upload and transcription
-if st.button('Record Audio'):
-    # This should trigger the JavaScript to start recording
-    st.session_state['record_audio'] = True
-
-# Check if there's a new audio data in the session state
-if 'audio_data' in st.session_state:
-    transcription = transcribe_audio(st.session_state['audio_data'])
+# Handle transcription requests directly in Streamlit
+if 'audio' in st.session_state:
+    audio_base64 = st.session_state['audio']
+    transcription = transcribe_audio(audio_base64)
+    st.session_state['transcription'] = transcription
     st.write(f"Transcription: {transcription}")
-    del st.session_state['audio_data']
 
-# Function to update the session state with the uploaded audio
-def update_audio_data():
-    query_params = st.experimental_get_query_params()
-    if 'audio_data' in query_params:
-        st.session_state['audio_data'] = query_params['audio_data']
-        st.experimental_set_query_params(audio_data=None)
+# Display transcription result if available
+if 'transcription' in st.session_state:
+    st.write(f"Transcription: {st.session_state['transcription']}")
 
-update_audio_data()
+# JavaScript to fetch the transcription result
+transcription_fetch_code = """
+<script>
+document.querySelector('body').addEventListener('transcriptionComplete', (event) => {
+    const transcriptionText = event.detail;
+    fetch('/transcription', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ transcription: transcriptionText })
+    });
+});
+</script>
+"""
+
+st.components.v1.html(transcription_fetch_code)
+
+# Endpoint to handle transcription post requests
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/transcription', methods=['POST'])
+def handle_transcription():
+    data = request.get_json()
+    if 'audio' in data:
+        st.session_state['audio'] = data['audio']
+    if 'transcription' in data:
+        st.session_state['transcription'] = data['transcription']
+    return jsonify(success=True)
+
+# Start the Flask server
+from threading import Thread
+
+def run_flask():
+    app.run(port=8501)
+
+flask_thread = Thread(target=run_flask)
+flask_thread.start()

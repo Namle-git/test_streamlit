@@ -95,20 +95,22 @@ def transcribe_audio(audio_base64):
     
     return transcription
 
-# Handle the audio upload and transcription
+# Endpoint to handle audio upload and transcription
+if st.button('Record Audio'):
+    # This should trigger the JavaScript to start recording
+    st.session_state['record_audio'] = True
+
+# Check if there's a new audio data in the session state
 if 'audio_data' in st.session_state:
     transcription = transcribe_audio(st.session_state['audio_data'])
     st.write(f"Transcription: {transcription}")
+    del st.session_state['audio_data']
 
 # Function to update the session state with the uploaded audio
 def update_audio_data():
     query_params = st.experimental_get_query_params()
     if 'audio_data' in query_params:
-        st.session_state['audio_data'] = query_params['audio_data'][0]
+        st.session_state['audio_data'] = query_params['audio_data']
         st.experimental_set_query_params(audio_data=None)
 
 update_audio_data()
-
-# Add a placeholder to update with the recorded audio data
-if st.button('Record Audio'):
-    st.experimental_set_query_params(audio_data="")  # This should trigger the JavaScript to start recording

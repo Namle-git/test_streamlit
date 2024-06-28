@@ -1,6 +1,5 @@
 import streamlit as st
 from flask import Flask, request, jsonify, send_file
-import speech_recognition as sr
 import base64
 from io import BytesIO
 from threading import Thread
@@ -8,6 +7,10 @@ import logging
 
 # Initialize Streamlit app
 st.title("Audio Recording Web App")
+
+# Initialize session state for audio
+if "audio" not in st.session_state:
+    st.session_state["audio"] = None
 
 # HTML and JavaScript for recording audio
 html_code = """
@@ -44,6 +47,8 @@ function startRecording() {
                     }).then(response => {
                         return response.json();
                     }).then(data => {
+                        // Store the base64 audio data in session state
+                        window.parent.postMessage({ type: 'audio', data: data.audio }, '*');
                         document.getElementById("status").innerText = "Recording uploaded";
                         document.getElementById("status").style.color = "green";
                     });
@@ -66,7 +71,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 <p id="status">Status: Not recording</p>
 <div id="playback"></div>
-<p id="transcription">Transcription: </p>
 """
 
 st.components.v1.html(html_code)
@@ -84,7 +88,7 @@ def upload_audio():
     audio_file = BytesIO(audio_data)
     audio_file.seek(0)  # Reset file pointer to the beginning
     
-    # Return success message
+    # Return success message along with the base64 audio data
     return jsonify({'message': 'Audio uploaded successfully', 'audio': data['audio']})
 
 @app.route('/get_audio', methods=['GET'])
@@ -102,3 +106,27 @@ def run_flask():
 # Start the Flask server in a separate thread
 flask_thread = Thread(target=run_flask)
 flask_thread.start()
+
+# Handle the postMessage event to store audio in session state
+st.session_state_js_code = """
+<script>
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'audio') {
+        const base64Audio = event.data.data;
+        // Store base64 audio data in session state
+        window.parent.streamlitApi.setSessionStateValue("audio", base64Audio);
+    }
+});
+</script>
+"""
+
+st.components.v1.html(st.session_state_js_code)
+
+# Display the stored audio file if available
+if st.session_state["audio"]:
+    audio_base64 = st.session_state["audio"]
+    audio_data = base64.b64decode(audio_base64.split(',')[1])
+    audio_file = BytesIO(audio_data)
+    audio_file.seek(0)  # Reset file pointer to the beginning
+    
+    st.audio(audio_file, format='audio/wav')

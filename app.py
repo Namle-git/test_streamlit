@@ -5,6 +5,38 @@ from io import BytesIO
 from threading import Thread
 import logging
 
+# Flask server setup
+app = Flask(__name__)
+
+@app.route('/upload', methods=['POST'])
+def upload_audio():
+    data = request.get_json()
+    audio_base64 = data['audio'].split(',')[1]  # Remove the data URL scheme
+    audio_data = base64.b64decode(audio_base64)
+    
+    # Save the audio data to a BytesIO object
+    audio_file = BytesIO(audio_data)
+    audio_file.seek(0)  # Reset file pointer to the beginning
+    
+    # Return success message along with the base64 audio data
+    return jsonify({'message': 'Audio uploaded successfully', 'audio': data['audio']})
+
+@app.route('/get_audio', methods=['GET'])
+def get_audio():
+    audio_base64 = request.args.get('audio')
+    audio_data = base64.b64decode(audio_base64.split(',')[1])
+    audio_file = BytesIO(audio_data)
+    audio_file.seek(0)  # Reset file pointer to the beginning
+    
+    return send_file(audio_file, mimetype='audio/wav', as_attachment=True, attachment_filename='recording.wav')
+
+def run_flask():
+    app.run(port=5000, debug=True, use_reloader=False)
+
+# Start the Flask server in a separate thread
+flask_thread = Thread(target=run_flask)
+flask_thread.start()
+
 # Initialize Streamlit app
 st.title("Audio Recording Web App")
 
@@ -76,48 +108,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 st.components.v1.html(html_code)
 
-# Flask server setup
-app = Flask(__name__)
-
-@app.route('/upload', methods=['POST'])
-def upload_audio():
-    data = request.get_json()
-    audio_base64 = data['audio'].split(',')[1]  # Remove the data URL scheme
-    audio_data = base64.b64decode(audio_base64)
-    
-    # Save the audio data to a BytesIO object
-    audio_file = BytesIO(audio_data)
-    audio_file.seek(0)  # Reset file pointer to the beginning
-    
-    # Return success message along with the base64 audio data
-    return jsonify({'message': 'Audio uploaded successfully', 'audio': data['audio']})
-
-@app.route('/get_audio', methods=['GET'])
-def get_audio():
-    audio_base64 = request.args.get('audio')
-    audio_data = base64.b64decode(audio_base64.split(',')[1])
-    audio_file = BytesIO(audio_data)
-    audio_file.seek(0)  # Reset file pointer to the beginning
-    
-    return send_file(audio_file, mimetype='audio/wav', as_attachment=True, attachment_filename='recording.wav')
-
-def run_flask():
-    app.run(port=5000, debug=True, use_reloader=False)
-
-# Start the Flask server in a separate thread
-flask_thread = Thread(target=run_flask)
-flask_thread.start()
-
 # Check if there is audio data in the query parameters and store it in session state
 query_params = st.query_params.to_dict()
-if "audio" in query_params:
-    st.session_state["audio"] = query_params["audio"][0]
-
-# Display the stored audio file if available
-if st.session_state["audio"]:
-    audio_base64 = st.session_state["audio"]
-    audio_data = base64.b64decode(audio_base64.split(',')[1])
-    audio_file = BytesIO(audio_data)
-    audio_file.seek(0)  # Reset file pointer to the beginning
-    
-    st.audio(audio_file, format='audio/wav')
+for key, value in query_params:
+    st.write(key)

@@ -2,6 +2,7 @@ import streamlit as st
 import speech_recognition as sr
 import base64
 from io import BytesIO
+import json
 
 # Initialize Streamlit app
 st.title("Speech Recognition Web App")
@@ -13,6 +14,9 @@ var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
+    document.getElementById("status").innerText = "Recording...";
+    document.getElementById("status").style.color = "red";
+    
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -28,8 +32,8 @@ function startRecording() {
                 fileReader.readAsDataURL(audioBlob);
                 fileReader.onloadend = function() {
                     var base64data = fileReader.result;
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "/transcribe", true);
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/upload_audio", true);
                     xhr.setRequestHeader("Content-Type", "application/json");
                     xhr.onreadystatechange = function () {
                         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -53,6 +57,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 </script>
 
+<p id="status">Status: Not recording</p>
+<div id="playback"></div>
 <p id="transcription">Transcription: </p>
 """
 
@@ -65,12 +71,6 @@ document.addEventListener('transcriptionComplete', (event) => {
     const transcriptionText = event.detail;
     const transcriptionElement = document.getElementById("transcription");
     transcriptionElement.innerHTML = "Transcription: " + transcriptionText;
-
-    // Send the transcription back to Streamlit
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/update_transcription", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify({ transcription: transcriptionText }));
 });
 </script>
 """
@@ -95,15 +95,20 @@ def transcribe_audio(audio_base64):
     
     return transcription
 
-# Endpoint to handle the audio upload and transcription
-if st.query_params().get("transcribe"):
-    import json
-    data = json.loads(st.query_params().get("transcribe")[0])
-    transcription = transcribe_audio(data['audio'])
-    st.query_params(transcription=transcription)
+# Handle the audio upload and transcription
+if 'audio_data' in st.session_state:
+    transcription = transcribe_audio(st.session_state['audio_data'])
+    st.write(f"Transcription: {transcription}")
 
-# Endpoint to update transcription
-if st.query_params().get("update_transcription"):
-    import json
-    data = json.loads(st.query_params().get("update_transcription")[0])
-    st.write(f"Transcription: {data['transcription']}")
+# Function to update the session state with the uploaded audio
+def update_audio_data():
+    query_params = st.experimental_get_query_params()
+    if 'audio_data' in query_params:
+        st.session_state['audio_data'] = query_params['audio_data'][0]
+        st.experimental_set_query_params(audio_data=None)
+
+update_audio_data()
+
+# Add a placeholder to update with the recorded audio data
+if st.button('Record Audio'):
+    st.experimental_set_query_params(audio_data="")  # This should trigger the JavaScript to start recording

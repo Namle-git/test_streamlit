@@ -47,10 +47,11 @@ function startRecording() {
                     }).then(response => {
                         return response.json();
                     }).then(data => {
-                        // Store the base64 audio data in session state
-                        window.parent.postMessage({ type: 'audio', data: data.audio }, '*');
-                        document.getElementById("status").innerText = "Recording uploaded";
-                        document.getElementById("status").style.color = "green";
+                        // Update the query parameters to include the audio data
+                        const queryParams = new URLSearchParams(window.location.search);
+                        queryParams.set("audio", data.audio);
+                        window.history.replaceState({}, '', `${window.location.pathname}?${queryParams.toString()}`);
+                        window.location.reload();
                     });
                 }
 
@@ -107,20 +108,10 @@ def run_flask():
 flask_thread = Thread(target=run_flask)
 flask_thread.start()
 
-# Handle the postMessage event to store audio in session state
-st.session_state_js_code = """
-<script>
-window.addEventListener('message', (event) => {
-    if (event.data.type === 'audio') {
-        const base64Audio = event.data.data;
-        // Store base64 audio data in session state
-        window.parent.streamlitApi.setSessionStateValue("audio", base64Audio);
-    }
-});
-</script>
-"""
-
-st.components.v1.html(st.session_state_js_code)
+# Check if there is audio data in the query parameters and store it in session state
+query_params = st.query_params.to_dict()
+if "audio" in query_params:
+    st.session_state["audio"] = query_params["audio"][0]
 
 # Display the stored audio file if available
 if st.session_state["audio"]:

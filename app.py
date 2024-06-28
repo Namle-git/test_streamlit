@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 import speech_recognition as sr
 import base64
 from io import BytesIO
+from threading import Thread 
 
 app = Flask(__name__)
 

@@ -110,5 +110,5 @@ st.components.v1.html(html_code)
 
 # Check if there is audio data in the query parameters and store it in session state
 query_params = st.query_params.to_dict()
-for key, value in query_params:
+for key, value in query_params.items():
     st.write(key)

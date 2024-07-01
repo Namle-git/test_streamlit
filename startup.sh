@@ -1,17 +1,24 @@
 #!/bin/bash
 
-# Update package list and install required libraries
+echo "Updating package list..."
 apt-get update
+
+echo "Installing required libraries..."
 apt-get install -y libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
 
-# Install PyAudio
+echo "Installing PyAudio..."
 pip install PyAudio==0.2.14
 
-# Update the shared library cache
+echo "Updating the shared library cache..."
 ldconfig
 
-# Start the Flask backend server in the background
-python backend.py &
+echo "Starting the Flask backend server..."
+# Start Flask backend server in the background and redirect logs to flask.log
+python backend.py > flask.log 2>&1 &
 
-# Start the Streamlit app
-streamlit run app.py --server.port $PORT
+# Wait for a few seconds to ensure Flask server starts
+sleep 5
+
+echo "Starting the Streamlit app..."
+# Start Streamlit app and redirect logs to streamlit.log
+streamlit run app.py --server.port $PORT > streamlit.log 2>&1

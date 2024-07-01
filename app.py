@@ -84,7 +84,10 @@ function startRecording() {
 
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM content loaded");
-    document.getElementById("startButton").addEventListener("click", startRecording);
+    document.getElementById("startButton").addEventListener("click", () => {
+        console.log("Start button clicked");
+        startRecording();
+    });
 });
 </script>
 

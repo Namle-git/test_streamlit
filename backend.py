@@ -1,5 +1,6 @@
 import streamlit as st
 from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
 import base64
 import os
 from io import BytesIO
@@ -11,6 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Flask server setup
 app = Flask(__name__)
+CORS(app)  # Add this line to handle CORS
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 

@@ -75,10 +75,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 """
 
 # Include the HTML and JavaScript in the Streamlit app
-st.components.v1.html(html_code)
+st.markdown(html_code, unsafe_allow_html=True)
 
 # JavaScript to communicate with Streamlit
-st.write("""
+st.markdown("""
 <script>
 window.addEventListener('audioIdMessage', function(event) {
     const audioId = event.detail.audioId;
@@ -91,7 +91,7 @@ window.addEventListener('audioIdMessage', function(event) {
     });
 });
 </script>
-""")
+""", unsafe_allow_html=True)
 
 # Flask endpoint to update session state
 from flask import Flask, request, jsonify

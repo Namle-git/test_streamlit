@@ -17,7 +17,7 @@ st.title("Audio Recording Web App")
 if "audio_id" not in st.session_state:
     st.session_state["audio_id"] = None
 
-# HTML and JavaScript for recording audio
+# HTML and JavaScript for recording audio with a button
 html_code = """
 <script>
 console.log("Script loaded");
@@ -84,10 +84,11 @@ function startRecording() {
 
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM content loaded");
-    startRecording();
+    document.getElementById("startButton").addEventListener("click", startRecording);
 });
 </script>
 
+<button id="startButton">Start Recording</button>
 <p id="status">Status: Not recording</p>
 <div id="playback"></div>
 """

@@ -1,7 +1,11 @@
 import streamlit as st
 from threading import Thread
-from backend import run_flask  # Import the Flask app setup
 import requests
+
+# Function to run Flask server
+def run_flask():
+    import backend  # Import the backend module to ensure it runs
+    backend.run_flask()
 
 # Start the Flask server in a separate thread
 flask_thread = Thread(target=run_flask)
@@ -17,28 +21,35 @@ if "audio_id" not in st.session_state:
 # HTML and JavaScript for recording audio
 html_code = """
 <script>
+console.log("Script loaded");
+
 var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
+    console.log("Starting recording...");
     document.getElementById("status").innerText = "Recording...";
     document.getElementById("status").style.color = "red";
 
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
+            console.log("Microphone access granted");
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.start();
+            console.log("MediaRecorder started");
 
             mediaRecorder.addEventListener("dataavailable", event => {
                 audioChunks.push(event.data);
             });
 
             mediaRecorder.addEventListener("stop", () => {
+                console.log("Recording stopped");
                 var audioBlob = new Blob(audioChunks);
                 var fileReader = new FileReader();
                 fileReader.readAsDataURL(audioBlob);
                 fileReader.onloadend = function() {
                     var base64data = fileReader.result;
+                    console.log("Audio data read as base64");
 
                     fetch('http://localhost:5000/upload', {
                         method: 'POST',
@@ -49,13 +60,13 @@ function startRecording() {
                     }).then(response => {
                         return response.json();
                     }).then(data => {
-                        console.log("Received response:", data);  // Debug log
+                        console.log("Received response:", data);
                         // Send a message to the Streamlit app with the audio ID
                         const audioId = data.audio_id;
                         const audioIdMessage = new CustomEvent('audioIdMessage', { detail: { audioId } });
                         window.dispatchEvent(audioIdMessage);
                     }).catch(error => {
-                        console.error("Error uploading audio:", error);  // Error handling
+                        console.error("Error uploading audio:", error);
                     });
                 }
 
@@ -67,12 +78,13 @@ function startRecording() {
                 mediaRecorder.stop();
             }, 5000); // Record for 5 seconds
         }).catch(error => {
-            console.error("Error accessing microphone:", error);  // Error handling
+            console.error("Error accessing microphone:", error);
             document.getElementById("status").innerText = "Error accessing microphone";
         });
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
+    console.log("DOM content loaded");
     startRecording();
 });
 </script>
@@ -98,38 +110,19 @@ window.addEventListener('audioIdMessage', function(event) {
     }).then(response => {
         return response.json();
     }).then(data => {
-        console.log("Streamlit session state updated:", data);  // Debug log
+        console.log("Streamlit session state updated:", data);
     }).catch(error => {
-        console.error("Error updating Streamlit session state:", error);  // Error handling
+        console.error("Error updating Streamlit session state:", error);
     });
 });
 </script>
 """, unsafe_allow_html=True)
 
-# Flask endpoint to update session state
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-@app.route('/streamlit_set_audio_id', methods=['POST'])
-def streamlit_set_audio_id():
-    data = request.json
-    audio_id = data['audio_id']
-    st.session_state.audio_id = audio_id
-    return jsonify({'message': 'Audio ID set in session state'})
-
-def run_flask():
-    app.run(port=5000, debug=True, use_reloader=False)
-
-if __name__ == "__main__":
-    flask_thread = Thread(target=run_flask)
-    flask_thread.start()
-
-    # Display the stored audio file if available
-    if st.session_state.audio_id:
-        audio_id = st.session_state.audio_id
-        audio_url = f"http://localhost:5000/get_audio/{audio_id}"
-        st.audio(audio_url)
-        st.write("Audio is displayed")  # Debugging line to confirm audio display
-    else:
-        st.write("No audio found in session state")
+# Display the stored audio file if available
+if st.session_state.audio_id:
+    audio_id = st.session_state.audio_id
+    audio_url = f"http://localhost:5000/get_audio/{audio_id}"
+    st.audio(audio_url)
+    st.write("Audio is displayed")  # Debugging line to confirm audio display
+else:
+    st.write("No audio found in session state")

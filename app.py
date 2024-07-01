@@ -1,15 +1,6 @@
 import streamlit as st
 from threading import Thread
 
-# Function to run Flask server
-def run_flask():
-    import backend  # Import the backend module to ensure it runs
-    backend.run_flask()
-
-# Start the Flask server in a separate thread
-flask_thread = Thread(target=run_flask)
-flask_thread.start()
-
 # Initialize Streamlit app
 st.title("Audio Recording Web App")
 

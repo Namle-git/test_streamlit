@@ -1,6 +1,7 @@
 import streamlit as st
 from threading import Thread
 from backend import run_flask  # Import the Flask app setup
+import requests
 
 # Start the Flask server in a separate thread
 flask_thread = Thread(target=run_flask)
@@ -39,7 +40,7 @@ function startRecording() {
                 fileReader.onloadend = function() {
                     var base64data = fileReader.result;
 
-                    fetch('/upload', {
+                    fetch('http://localhost:5000/upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -48,6 +49,7 @@ function startRecording() {
                     }).then(response => {
                         return response.json();
                     }).then(data => {
+                        console.log("Received response:", data);  // Debug log
                         // Send a message to the Streamlit app with the audio ID
                         const audioId = data.audio_id;
                         const audioIdMessage = new CustomEvent('audioIdMessage', { detail: { audioId } });
@@ -82,12 +84,16 @@ st.markdown("""
 <script>
 window.addEventListener('audioIdMessage', function(event) {
     const audioId = event.detail.audioId;
-    fetch(`/streamlit_set_audio_id`, {
+    fetch('http://localhost:5000/streamlit_set_audio_id', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ audio_id: audioId })
+    }).then(response => {
+        return response.json();
+    }).then(data => {
+        console.log("Streamlit session state updated:", data);  // Debug log
     });
 });
 </script>

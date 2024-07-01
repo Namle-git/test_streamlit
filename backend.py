@@ -1,9 +1,7 @@
-import streamlit as st
 from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
 import base64
 import os
-from io import BytesIO
-from threading import Thread
 import logging
 
 # Set up logging
@@ -11,6 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Flask server setup
 app = Flask(__name__)
+CORS(app)  # Handle CORS
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -28,7 +27,6 @@ def upload_audio():
         audio_file.write(audio_data)
     
     logging.debug("Audio uploaded successfully")
-    # Return the audio ID
     return jsonify({'message': 'Audio uploaded successfully', 'audio_id': audio_id})
 
 @app.route('/get_audio/<audio_id>', methods=['GET'])
@@ -42,8 +40,7 @@ def get_audio(audio_id):
     return send_file(audio_path, mimetype='audio/wav', as_attachment=True, attachment_filename=audio_id)
 
 def run_flask():
-    app.run(port=5000, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
 
-# Start the Flask server in a separate thread
-flask_thread = Thread(target=run_flask)
-flask_thread.start()
+if __name__ == "__main__":
+    run_flask()

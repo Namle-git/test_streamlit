@@ -59,7 +59,7 @@ function startRecording() {
                         body: JSON.stringify({ audio: base64data })
                     }).then(response => {
                         if (!response.ok) {
-                            throw new Error('Network response was not ok');
+                            throw new Error('Network response was not ok: ' + response.statusText);
                         }
                         return response.json();
                     }).then(data => {
@@ -72,7 +72,7 @@ function startRecording() {
                         window.dispatchEvent(audioIdMessage);
                     }).catch(error => {
                         console.error("Error uploading audio:", error);
-                        document.getElementById("status").innerText = "Error uploading audio";
+                        document.getElementById("status").innerText = "Error uploading audio: " + error.message;
                         document.getElementById("status").style.color = "red";
                     });
                 }
@@ -86,7 +86,7 @@ function startRecording() {
             }, 5000); // Record for 5 seconds
         }).catch(error => {
             console.error("Error accessing microphone:", error);
-            document.getElementById("status").innerText = "Error accessing microphone";
+            document.getElementById("status").innerText = "Error accessing microphone: " + error.message;
             document.getElementById("status").style.color = "red";
         });
 }

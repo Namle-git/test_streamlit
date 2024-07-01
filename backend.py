@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Flask server setup
 app = Flask(__name__)
-CORS(app)  # Add this line to handle CORS
+CORS(app)  # Enable CORS for all routes
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 

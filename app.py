@@ -51,21 +51,29 @@ function startRecording() {
                     var base64data = fileReader.result;
                     console.log("Audio data read as base64");
 
-                    fetch('/upload', {
+                    fetch('https://simonaireceptionistchatbot.azurewebsites.net/upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ audio: base64data })
                     }).then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
                         return response.json();
                     }).then(data => {
                         console.log("Received response:", data);
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
                         const audioId = data.audio_id;
                         const audioIdMessage = new CustomEvent('audioIdMessage', { detail: { audioId } });
                         window.dispatchEvent(audioIdMessage);
                     }).catch(error => {
                         console.error("Error uploading audio:", error);
+                        document.getElementById("status").innerText = "Error uploading audio";
+                        document.getElementById("status").style.color = "red";
                     });
                 }
 
@@ -79,6 +87,7 @@ function startRecording() {
         }).catch(error => {
             console.error("Error accessing microphone:", error);
             document.getElementById("status").innerText = "Error accessing microphone";
+            document.getElementById("status").style.color = "red";
         });
 }
 
@@ -102,7 +111,7 @@ st.write("""
 window.addEventListener('audioIdMessage', function(event) {
     console.log("audioIdMessage event received:", event.detail.audioId);
     const audioId = event.detail.audioId;
-    fetch('/streamlit_set_audio_id', {
+    fetch('https://simonaireceptionistchatbot.azurewebsites.net/streamlit_set_audio_id', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -122,7 +131,7 @@ window.addEventListener('audioIdMessage', function(event) {
 # Display the stored audio file if available
 if st.session_state.audio_id:
     audio_id = st.session_state.audio_id
-    audio_url = f"http://localhost:5000/get_audio/{audio_id}"
+    audio_url = f"https://simonaireceptionistchatbot.azurewebsites.net/get_audio/{audio_id}"
     st.audio(audio_url)
     st.write("Audio is displayed")  # Debugging line to confirm audio display
 else:

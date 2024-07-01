@@ -1,6 +1,5 @@
 import streamlit as st
 from threading import Thread
-import requests
 
 # Function to run Flask server
 def run_flask():
@@ -39,6 +38,7 @@ function startRecording() {
             console.log("MediaRecorder started");
 
             mediaRecorder.addEventListener("dataavailable", event => {
+                console.log("Data available event: ", event);
                 audioChunks.push(event.data);
             });
 
@@ -51,7 +51,7 @@ function startRecording() {
                     var base64data = fileReader.result;
                     console.log("Audio data read as base64");
 
-                    fetch('http://localhost:5000/upload', {
+                    fetch('/upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -61,7 +61,6 @@ function startRecording() {
                         return response.json();
                     }).then(data => {
                         console.log("Received response:", data);
-                        // Send a message to the Streamlit app with the audio ID
                         const audioId = data.audio_id;
                         const audioIdMessage = new CustomEvent('audioIdMessage', { detail: { audioId } });
                         window.dispatchEvent(audioIdMessage);
@@ -100,8 +99,9 @@ st.markdown(html_code, unsafe_allow_html=True)
 st.markdown("""
 <script>
 window.addEventListener('audioIdMessage', function(event) {
+    console.log("audioIdMessage event received:", event.detail.audioId);
     const audioId = event.detail.audioId;
-    fetch('http://localhost:5000/streamlit_set_audio_id', {
+    fetch('/streamlit_set_audio_id', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

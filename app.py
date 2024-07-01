@@ -54,6 +54,8 @@ function startRecording() {
                         const audioId = data.audio_id;
                         const audioIdMessage = new CustomEvent('audioIdMessage', { detail: { audioId } });
                         window.dispatchEvent(audioIdMessage);
+                    }).catch(error => {
+                        console.error("Error uploading audio:", error);  // Error handling
                     });
                 }
 
@@ -64,6 +66,9 @@ function startRecording() {
             setTimeout(() => {
                 mediaRecorder.stop();
             }, 5000); // Record for 5 seconds
+        }).catch(error => {
+            console.error("Error accessing microphone:", error);  // Error handling
+            document.getElementById("status").innerText = "Error accessing microphone";
         });
 }
 
@@ -94,6 +99,8 @@ window.addEventListener('audioIdMessage', function(event) {
         return response.json();
     }).then(data => {
         console.log("Streamlit session state updated:", data);  // Debug log
+    }).catch(error => {
+        console.error("Error updating Streamlit session state:", error);  // Error handling
     });
 });
 </script>

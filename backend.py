@@ -44,6 +44,4 @@ def get_audio(audio_id):
 def run_flask():
     app.run(port=5000, debug=True, use_reloader=False)
 
-# Start the Flask server in a separate thread
-flask_thread = Thread(target=run_flask)
-flask_thread.start()
+# Note: Do not start the thread here. This will be done in the main Streamlit app file.

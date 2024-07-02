@@ -7,7 +7,7 @@ st.title("Basic String Communication Web App")
 html_code = """
 <script>
 function sendString() {
-    const url = `http://simonaireceptionistchatbot.azurewebsites.net:5000/string_upload`;
+    const url = `https://${window.location.hostname}/string_upload`; // Ensure HTTPS
     fetch(url, {
         method: 'POST',
         headers: {

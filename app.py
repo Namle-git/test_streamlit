@@ -1,21 +1,12 @@
 import streamlit as st
-from threading import Thread
-
-# Function to run Flask server
-def run_flask():
-    import backend  # Import the backend module to ensure it runs
-    backend.run_flask()
-
-# Start the Flask server in a separate thread
-flask_thread = Thread(target=run_flask)
-flask_thread.start()
+import base64
 
 # Initialize Streamlit app
 st.title("Audio Recording Web App")
 
 # Initialize session state for audio
-if "audio_id" not in st.session_state:
-    st.session_state["audio_id"] = None
+if "audio_data" not in st.session_state:
+    st.session_state["audio_data"] = None
 
 # HTML and JavaScript for recording audio with a button
 html_code = """
@@ -45,13 +36,13 @@ function startRecording() {
             mediaRecorder.addEventListener("stop", () => {
                 console.log("Recording stopped");
                 var audioBlob = new Blob(audioChunks);
-                var fileReader = new FileReader();
-                fileReader.readAsDataURL(audioBlob);
-                fileReader.onloadend = function() {
-                    var base64data = fileReader.result;
+                var reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = function() {
+                    var base64data = reader.result.split(',')[1];
                     console.log("Audio data read as base64");
 
-                    fetch('https://simonaireceptionistchatbot.azurewebsites.net/upload', {
+                    fetch('/audio_upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -64,21 +55,14 @@ function startRecording() {
                         return response.json();
                     }).then(data => {
                         console.log("Received response:", data);
-                        if (data.error) {
-                            throw new Error(data.error);
-                        }
-                        const audioId = data.audio_id;
-                        const audioIdMessage = new CustomEvent('audioIdMessage', { detail: { audioId } });
-                        window.dispatchEvent(audioIdMessage);
+                        document.getElementById("status").innerText = "Recording stopped";
+                        document.getElementById("status").style.color = "black";
                     }).catch(error => {
                         console.error("Error uploading audio:", error);
                         document.getElementById("status").innerText = "Error uploading audio: " + error.message;
                         document.getElementById("status").style.color = "red";
                     });
                 }
-
-                document.getElementById("status").innerText = "Recording stopped";
-                document.getElementById("status").style.color = "black";
             });
 
             setTimeout(() => {
@@ -99,40 +83,42 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 <button id="startButton">Start Recording</button>
 <p id="status">Status: Not recording</p>
-<div id="playback"></div>
 """
 
 # Include the HTML and JavaScript in the Streamlit app
-st.components.v1.html(html_code)
+st.components.v1.html(html_code, height=300)
 
-# JavaScript to communicate with Streamlit
-st.write("""
-<script>
-window.addEventListener('audioIdMessage', function(event) {
-    console.log("audioIdMessage event received:", event.detail.audioId);
-    const audioId = event.detail.audioId;
-    fetch('https://simonaireceptionistchatbot.azurewebsites.net/streamlit_set_audio_id', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ audio_id: audioId })
-    }).then(response => {
-        return response.json();
-    }).then(data => {
-        console.log("Streamlit session state updated:", data);
-    }).catch(error => {
-        console.error("Error updating Streamlit session state:", error);
-    });
-});
-</script>
-""", unsafe_allow_html=True)
+# Create an endpoint in Streamlit to receive the audio data
+def audio_upload_handler():
+    from flask import request
+    data = request.json
+    st.session_state["audio_data"] = base64.b64decode(data['audio'])
+    return "Audio received", 200
 
-# Display the stored audio file if available
-if st.session_state.audio_id:
-    audio_id = st.session_state.audio_id
-    audio_url = f"https://simonaireceptionistchatbot.azurewebsites.net/get_audio/{audio_id}"
-    st.audio(audio_url)
-    st.write("Audio is displayed")  # Debugging line to confirm audio display
-else:
-    st.write("No audio found in session state")
+# Run the Streamlit app with the Flask endpoint
+from streamlit.components.v1 import declare_component
+import streamlit.components.v1 as components
+
+def main():
+    # Use Flask to handle the POST request
+    from flask import Flask, request
+    app = Flask(__name__)
+    app.add_url_rule('/audio_upload', 'audio_upload', audio_upload_handler, methods=['POST'])
+
+    # Run Flask in a separate thread
+    from threading import Thread
+    thread = Thread(target=app.run, kwargs={'port': 8501})
+    thread.start()
+
+    # Your Streamlit code
+    st.title("Streamlit App with Audio Recording")
+
+    # Add the JavaScript and HTML code
+    st.components.v1.html(html_code, height=300)
+
+    # Display the recorded audio if available
+    if st.session_state["audio_data"]:
+        st.audio(st.session_state["audio_data"], format="audio/wav")
+
+if __name__ == "__main__":
+    main()

@@ -25,18 +25,22 @@ def string_upload_handler():
 
 def run_flask():
     try:
-        from waitress import serve
-        logger.info("Starting Flask server with waitress on port 8000")
-        serve(app, host='0.0.0.0', port=8000)
+        logger.info("Starting Flask server on port 5000")
+        app.run(host='0.0.0.0', port=5000)
     except Exception as e:
         logger.error(f"Error starting Flask server: {e}")
 
 def run_streamlit():
     try:
         logger.info("Starting Streamlit app")
-        os.system('streamlit run app.py --server.port 8000')
+        os.system('streamlit run app.py --server.port 8501')
     except Exception as e:
         logger.error(f"Error starting Streamlit app: {e}")
 
 if __name__ == '__main__':
-    run_flask()
+    flask_thread = Thread(target=run_flask)
+    flask_thread.start()
+    streamlit_thread = Thread(target=run_streamlit)
+    streamlit_thread.start()
+    flask_thread.join()
+    streamlit_thread.join()

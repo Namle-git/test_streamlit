@@ -29,7 +29,7 @@ def run_flask():
 
 def run_streamlit():
     logging.info("Starting Streamlit app")
-    os.system('streamlit run app.py --server.port 8000')
+    os.system('streamlit run app.py --server.port $PORT')
 
 if __name__ == '__main__':
     flask_thread = Thread(target=run_flask)

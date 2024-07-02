@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 """
 
 # Include the HTML and JavaScript in the Streamlit app
-st.write(html_code, height=300)
+st.write(html_code, unsafe_allow_html=True)
 
 # Flask app setup
 app = Flask(__name__)

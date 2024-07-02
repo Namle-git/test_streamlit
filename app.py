@@ -7,7 +7,7 @@ st.title("Basic String Communication Web App")
 html_code = """
 <script>
 function sendString() {
-    const url = `https://simonaireceptionistchatbot.azurewebsites.net/string_upload`;
+    const url = `https://simonaireceptionistchatbot.azurewebsites.net/string_upload`; // Use the full hostname without specifying port
     fetch(url, {
         method: 'POST',
         headers: {

@@ -49,7 +49,7 @@ function startRecording() {
                     var base64data = reader.result.split(',')[1];
                     console.log("Audio data read as base64");
 
-                    fetch('/audio_upload', {
+                    fetch('https://simonaireceptionistchatbot.azurewebsites.net/audio_upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

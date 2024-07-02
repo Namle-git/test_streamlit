@@ -49,7 +49,7 @@ function startRecording() {
                     var base64data = reader.result.split(',')[1];
                     console.log("Audio data read as base64");
 
-                    fetch('https://' + window.location.hostname + '/audio_upload', {
+                    fetch('/audio_upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -112,7 +112,7 @@ def audio_upload_handler():
 
 # Function to run Flask server
 def run_flask():
-    app.run(host='0.0.0.0', port=8501)
+    app.run(host='0.0.0.0', port=8501, debug=True)
 
 # Start Flask server in a separate thread
 flask_thread = Thread(target=run_flask)

@@ -58,7 +58,7 @@ def string_upload_handler():
 
 # Function to run Flask server
 def run_flask():
-    app.run(host='0.0.0.0', port=8501, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)
 
 # Start Flask server in a separate thread
 flask_thread = Thread(target=run_flask)

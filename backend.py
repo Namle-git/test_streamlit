@@ -20,4 +20,4 @@ def string_upload_handler():
         return jsonify({"message": "Error uploading string", "error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='simonaireceptionistchatbot.azurewebsites.net', port=5000, debug=True)

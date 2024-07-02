@@ -1,5 +1,9 @@
 import streamlit as st
+from threading import Thread
 import base64
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import logging
 
 # Initialize Streamlit app
 st.title("Audio Recording Web App")
@@ -42,7 +46,7 @@ function startRecording() {
                     var base64data = reader.result.split(',')[1];
                     console.log("Audio data read as base64");
 
-                    fetch('/audio_upload', {
+                    fetch('https://simonaireceptionistchatbot.azurewebsites.net/audio_upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -88,37 +92,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
 # Include the HTML and JavaScript in the Streamlit app
 st.components.v1.html(html_code, height=300)
 
-# Create an endpoint in Streamlit to receive the audio data
+# Flask app setup
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/audio_upload', methods=['POST'])
 def audio_upload_handler():
-    from flask import request
     data = request.json
-    st.session_state["audio_data"] = base64.b64decode(data['audio'])
-    return "Audio received", 200
+    audio_data = base64.b64decode(data['audio'])
+    st.session_state["audio_data"] = audio_data
+    return jsonify({"message": "Audio received"}), 200
 
-# Run the Streamlit app with the Flask endpoint
-from streamlit.components.v1 import declare_component
-import streamlit.components.v1 as components
+# Function to run Flask server
+def run_flask():
+    app.run(host='0.0.0.0', port=8501)
 
-def main():
-    # Use Flask to handle the POST request
-    from flask import Flask, request
-    app = Flask(__name__)
-    app.add_url_rule('/audio_upload', 'audio_upload', audio_upload_handler, methods=['POST'])
+# Start Flask server in a separate thread
+flask_thread = Thread(target=run_flask)
+flask_thread.start()
 
-    # Run Flask in a separate thread
-    from threading import Thread
-    thread = Thread(target=app.run, kwargs={'port': 8501})
-    thread.start()
-
-    # Your Streamlit code
-    st.title("Streamlit App with Audio Recording")
-
-    # Add the JavaScript and HTML code
-    st.components.v1.html(html_code, height=300)
-
-    # Display the recorded audio if available
-    if st.session_state["audio_data"]:
-        st.audio(st.session_state["audio_data"], format="audio/wav")
-
-if __name__ == "__main__":
-    main()
+# Display the recorded audio if available
+if st.session_state["audio_data"]:
+    st.audio(st.session_state["audio_data"], format="audio/wav")

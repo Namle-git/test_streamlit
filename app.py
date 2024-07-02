@@ -1,8 +1,8 @@
 import streamlit as st
 from threading import Thread
-import base64
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import base64
 import logging
 
 # Initialize Streamlit app
@@ -46,7 +46,7 @@ function startRecording() {
                     var base64data = reader.result.split(',')[1];
                     console.log("Audio data read as base64");
 
-                    fetch('https://simonaireceptionistchatbot.azurewebsites.net/audio_upload', {
+                    fetch('/audio_upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 """
 
 # Include the HTML and JavaScript in the Streamlit app
-st.components.v1.html(html_code, height=300)
+st.write(html_code, height=300)
 
 # Flask app setup
 app = Flask(__name__)
@@ -98,10 +98,14 @@ CORS(app)
 
 @app.route('/audio_upload', methods=['POST'])
 def audio_upload_handler():
-    data = request.json
-    audio_data = base64.b64decode(data['audio'])
-    st.session_state["audio_data"] = audio_data
-    return jsonify({"message": "Audio received"}), 200
+    try:
+        data = request.json
+        audio_data = base64.b64decode(data['audio'])
+        st.session_state["audio_data"] = audio_data
+        return jsonify({"message": "Audio received"}), 200
+    except Exception as e:
+        logging.error(f"Error uploading audio: {e}")
+        return jsonify({"message": "Error uploading audio", "error": str(e)}), 500
 
 # Function to run Flask server
 def run_flask():

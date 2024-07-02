@@ -7,7 +7,6 @@ import os
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 # Flask app setup
 app = Flask(__name__)
@@ -17,25 +16,20 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # Enable CORS for all routes
 def string_upload_handler():
     try:
         data = request.json
-        logger.debug(f"Received string: {data['text']}")
+        logging.debug(f"Received string: {data['text']}")
         return jsonify({"message": "String received successfully"}), 200
     except Exception as e:
-        logger.error(f"Error uploading string: {e}")
+        logging.error(f"Error uploading string: {e}")
         return jsonify({"message": "Error uploading string", "error": str(e)}), 500
 
 def run_flask():
-    try:
-        logger.info("Starting Flask server on port 5000")
-        app.run(host='0.0.0.0', port=5000)
-    except Exception as e:
-        logger.error(f"Error starting Flask server: {e}")
+    from waitress import serve
+    logging.info("Starting Flask server with waitress on port 8000")
+    serve(app, host='0.0.0.0', port=os.environ.get('PORT'))
 
 def run_streamlit():
-    try:
-        logger.info("Starting Streamlit app")
-        os.system('streamlit run app.py --server.port 8501')
-    except Exception as e:
-        logger.error(f"Error starting Streamlit app: {e}")
+    logging.info("Starting Streamlit app")
+    os.system('streamlit run app.py --server.port $PORT')
 
 if __name__ == '__main__':
     flask_thread = Thread(target=run_flask)

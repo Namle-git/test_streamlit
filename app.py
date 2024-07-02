@@ -7,7 +7,7 @@ st.title("Basic String Communication Web App")
 html_code = """
 <script>
 function sendString() {
-    const url = `http://${window.location.hostname}:5000/string_upload`;
+    const url = `http://simonaireceptionistchatbot.azurewebsites.net:5000/string_upload`;
     fetch(url, {
         method: 'POST',
         headers: {

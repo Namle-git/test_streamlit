@@ -5,7 +5,7 @@ from flask_cors import CORS
 import logging
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # Initialize Streamlit app
 st.title("Basic String Communication Web App")
@@ -44,7 +44,7 @@ st.components.v1.html(html_code, height=200)
 
 # Flask app setup
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})  # Enable CORS for all routes
 
 @app.route('/string_upload', methods=['POST'])
 def string_upload_handler():
@@ -63,7 +63,3 @@ def run_flask():
 # Start Flask server in a separate thread
 flask_thread = Thread(target=run_flask)
 flask_thread.start()
-
-# Display the response if available
-if "response" in st.session_state:
-    st.write(f"Response: {st.session_state['response']}")

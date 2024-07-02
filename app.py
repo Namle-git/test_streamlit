@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Initialize Streamlit app
-st.title("Audio Recording Web App")
+st.title("Basic Audio Recording Web App")
 
 # Initialize session state for audio
 if "audio_data" not in st.session_state:
@@ -18,38 +18,26 @@ if "audio_data" not in st.session_state:
 # HTML and JavaScript for recording audio with a button
 html_code = """
 <script>
-console.log("Script loaded");
-
 var mediaRecorder;
 var audioChunks = [];
 
 function startRecording() {
-    console.log("Starting recording...");
-    document.getElementById("status").innerText = "Recording...";
-    document.getElementById("status").style.color = "red";
-
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
-            console.log("Microphone access granted");
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.start();
-            console.log("MediaRecorder started");
 
             mediaRecorder.addEventListener("dataavailable", event => {
-                console.log("Data available event: ", event);
                 audioChunks.push(event.data);
             });
 
             mediaRecorder.addEventListener("stop", () => {
-                console.log("Recording stopped");
                 var audioBlob = new Blob(audioChunks);
                 var reader = new FileReader();
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = function() {
                     var base64data = reader.result.split(',')[1];
-                    console.log("Audio data read as base64");
-
-                    fetch('https://simonaireceptionistchatbot.azurewebsites.net/audio_upload', {
+                    fetch('/audio_upload', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -62,12 +50,8 @@ function startRecording() {
                         return response.json();
                     }).then(data => {
                         console.log("Received response:", data);
-                        document.getElementById("status").innerText = "Recording stopped";
-                        document.getElementById("status").style.color = "black";
                     }).catch(error => {
                         console.error("Error uploading audio:", error);
-                        document.getElementById("status").innerText = "Error uploading audio: " + error.message;
-                        document.getElementById("status").style.color = "red";
                     });
                 }
             });
@@ -77,27 +61,20 @@ function startRecording() {
             }, 5000); // Record for 5 seconds
         }).catch(error => {
             console.error("Error accessing microphone:", error);
-            document.getElementById("status").innerText = "Error accessing microphone: " + error.message;
-            document.getElementById("status").style.color = "red";
         });
 }
-
-document.addEventListener('DOMContentLoaded', (event) => {
-    console.log("DOM content loaded");
-    document.getElementById("startButton").addEventListener("click", startRecording);
-});
 </script>
 
-<button id="startButton">Start Recording</button>
+<button onclick="startRecording()">Start Recording</button>
 <p id="status">Status: Not recording</p>
 """
 
 # Include the HTML and JavaScript in the Streamlit app
-st.components.v1.html(html_code, height=300)
+st.components.v1.html(html_code, height=200)
 
 # Flask app setup
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enable CORS for all routes
 
 @app.route('/audio_upload', methods=['POST'])
 def audio_upload_handler():

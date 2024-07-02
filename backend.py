@@ -1,9 +1,12 @@
+import streamlit as st
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
+from threading import Thread
+import os
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levellevelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # Flask app setup
 app = Flask(__name__)
@@ -19,7 +22,19 @@ def string_upload_handler():
         logging.error(f"Error uploading string: {e}")
         return jsonify({"message": "Error uploading string", "error": str(e)}), 500
 
-if __name__ == '__main__':
+def run_flask():
     from waitress import serve
     logging.info("Starting Flask server with waitress on port 8000")
     serve(app, host='0.0.0.0', port=8000)
+
+def run_streamlit():
+    logging.info("Starting Streamlit app")
+    os.system('streamlit run app.py --server.port 8000')
+
+if __name__ == '__main__':
+    flask_thread = Thread(target=run_flask)
+    flask_thread.start()
+    streamlit_thread = Thread(target=run_streamlit)
+    streamlit_thread.start()
+    flask_thread.join()
+    streamlit_thread.join()

@@ -14,10 +14,7 @@ ldconfig
 
 echo "Starting the Flask backend server..."
 # Start Flask backend server in the background and redirect logs to flask.log
-python backend.py > flask.log 2>&1 &
-
-# Wait for a few seconds to ensure Flask server starts
-sleep 5
+nohup python backend.py > flask.log 2>&1 &
 
 echo "Starting the Streamlit app..."
 # Start Streamlit app and redirect logs to streamlit.log

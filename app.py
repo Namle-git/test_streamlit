@@ -5,6 +5,9 @@ from flask_cors import CORS
 import base64
 import logging
 
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
 # Initialize Streamlit app
 st.title("Audio Recording Web App")
 
@@ -47,7 +50,6 @@ function startRecording() {
                     console.log("Audio data read as base64");
 
                     fetch('https://' + window.location.hostname + '/audio_upload', {
-                        method: 'POST',
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

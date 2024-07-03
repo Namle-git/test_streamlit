@@ -77,9 +77,9 @@ def handle_audio_data():
         st.audio(BytesIO(audio_bytes), format='audio/wav')
         st.write("Audio recorded successfully!")
 
-
-if st.query_params["audio_data"][0]:
-    st.session_state.audio_data = st.query_params["audio_data"][0]
+query_params = st.query_params.to_dict()
+if "audio_data" in query_params:
+    st.session_state.audio_data = query_params["audio_data"][0]
     handle_audio_data()
 
 # Display the recorded audio if available

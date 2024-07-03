@@ -16,11 +16,4 @@ ldconfig || { echo "Failed to update shared library cache"; exit 1; }
 
 echo "Starting the integrated Flask and Streamlit server..."
 
-# Ensure PORT and WEBSITES_PORT are set
-export PORT=${PORT:-8000}
-export WEBSITES_PORT=${WEBSITES_PORT:-8501}
-
-# Start Flask backend server in the background and redirect logs to backend.log
-nohup python backend.py > backend.log 2>&1 &
-
-echo "Startup script completed."
+streamlit run app.py --server.port $PORT

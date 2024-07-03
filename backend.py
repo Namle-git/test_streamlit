@@ -25,11 +25,12 @@ def string_upload_handler():
 def run_flask():
     from waitress import serve
     logging.info("Starting Flask server with waitress on port 8000")
-    serve(app, host='0.0.0.0', port=8000)  # Explicitly set port 8000 for Flask
+    serve(app, host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))  # Explicitly set port 8000 for Flask
 
 def run_streamlit():
+    streamlit_port=int(os.environ.get('WEBSITES_PORT', 8501))
     logging.info("Starting Streamlit app")
-    os.system('streamlit run app.py --server.port 8501')  # Explicitly set port 8501 for Streamlit
+    os.system('streamlit run app.py --server.port {streamlit_port}')  # Explicitly set port 8501 for Streamlit
 
 if __name__ == '__main__':
     flask_thread = Thread(target=run_flask)

@@ -10,6 +10,17 @@ st.title("Audio Recorder in Streamlit")
 # Initialize session state for audio data
 if 'audio_data' not in st.session_state:
     st.session_state.audio_data = ""
+import streamlit as st
+import base64
+from io import BytesIO
+from pydub import AudioSegment
+import streamlit.components.v1 as components
+
+st.title("Audio Recorder in Streamlit")
+
+# Initialize session state for audio data
+if 'audio_data' not in st.session_state:
+    st.session_state.audio_data = ""
 
 # JavaScript for audio recording and setting session state
 record_audio_html = """
@@ -26,30 +37,28 @@ function startRecording() {
             mediaRecorder.ondataavailable = event => {
                 audioChunks.push(event.data);
             };
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64String = reader.result.split(',')[1];
+                    const audioDataInput = document.getElementById("audio_data");
+                    audioDataInput.value = base64String;
+                    audioDataInput.dispatchEvent(new Event('change'));
+                };
+            };
             mediaRecorder.start();
 
             // Automatically stop recording after 5 seconds (5000 milliseconds)
-            setTimeout(stopRecording, 5000);
+            setTimeout(() => {
+                if (mediaRecorder.state !== "inactive") {
+                    mediaRecorder.stop();
+                }
+            }, 5000);
         });
 }
 
-// Function to stop recording audio
-function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-        mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = () => {
-                const base64String = reader.result.split(',')[1];
-                const audioDataInput = document.getElementById("audio_data");
-                audioDataInput.value = base64String;
-                audioDataInput.dispatchEvent(new Event('change'));
-            };
-        };
-    }
-}
 </script>
 <button onclick="startRecording()">Start Recording</button>
 <input type="hidden" id="audio_data" name="audio_data" onchange="handleAudioDataChange()">
@@ -71,7 +80,6 @@ window.addEventListener("audioDataAvailable", (event) => {
 
 components.html(record_audio_html)
 
-time.sleep(20)
 
 # Function to handle the custom event and update session state
 def handle_audio_data():
@@ -81,6 +89,8 @@ def handle_audio_data():
         audio = AudioSegment.from_file(BytesIO(audio_bytes), format="wav")
         st.audio(BytesIO(audio_bytes), format='audio/wav')
         st.write("Audio recorded successfully!")
+
+time.sleep(20)
 
 query_params = st.query_params.to_dict()
 if "audio_data" in query_params:

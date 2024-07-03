@@ -2,6 +2,7 @@ import streamlit as st
 import base64
 from io import BytesIO
 from pydub import AudioSegment
+import streamlit.components.v1 as components
 
 st.title("Audio Recorder in Streamlit")
 
@@ -15,6 +16,7 @@ record_audio_html = """
 let mediaRecorder;
 let audioChunks = [];
 
+// Function to start recording audio
 function startRecording() {
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
@@ -26,6 +28,7 @@ function startRecording() {
         });
 }
 
+// Function to stop recording audio
 function stopRecording() {
     mediaRecorder.stop();
     mediaRecorder.onstop = () => {
@@ -52,18 +55,15 @@ function handleAudioDataChange() {
 }
 window.addEventListener("audioDataAvailable", (event) => {
     const audioData = event.detail.audioData;
-    fetch("/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ audio_data: audioData }),
-    }).then(() => window.location.reload());
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = 'data:text/plain;base64,' + btoa(JSON.stringify({ audio_data: audioData }));
+    document.body.appendChild(iframe);
 });
 </script>
 """
 
-st.components.v1.html(record_audio_html)
+components.html(record_audio_html)
 
 # Function to handle the custom event and update session state
 def handle_audio_data():
@@ -74,12 +74,7 @@ def handle_audio_data():
         st.audio(BytesIO(audio_bytes), format='audio/wav')
         st.write("Audio recorded successfully!")
 
-# Check for POST request to update session state
-if st.request.method == "POST":
-    request_data = st.request.get_json()
-    st.session_state.audio_data = request_data.get("audio_data", "")
-    handle_audio_data()
+audio_data = st.query_params["audio_data"][0]
+st.session_state.audio_data = query_params
+handle_audio_data()
 
-# Display the recorded audio if available
-if st.session_state.audio_data:
-    handle_audio_data()

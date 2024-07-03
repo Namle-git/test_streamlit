@@ -3,6 +3,7 @@ import base64
 from io import BytesIO
 from pydub import AudioSegment
 import streamlit.components.v1 as components
+import time
 
 st.title("Audio Recorder in Streamlit")
 
@@ -26,6 +27,9 @@ function startRecording() {
                 audioChunks.push(event.data);
             };
             mediaRecorder.start();
+
+            // Automatically stop recording after 5 seconds (5000 milliseconds)
+            setTimeout(stopRecording, 5000);
         });
 }
 
@@ -48,7 +52,6 @@ function stopRecording() {
 }
 </script>
 <button onclick="startRecording()">Start Recording</button>
-<button onclick="stopRecording()">Stop Recording</button>
 <input type="hidden" id="audio_data" name="audio_data" onchange="handleAudioDataChange()">
 <script>
 function handleAudioDataChange() {
@@ -67,6 +70,8 @@ window.addEventListener("audioDataAvailable", (event) => {
 """
 
 components.html(record_audio_html)
+
+time.sleep(20)
 
 # Function to handle the custom event and update session state
 def handle_audio_data():

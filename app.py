@@ -43,34 +43,43 @@ function stopRecording() {
 </script>
 <button onclick="startRecording()">Start Recording</button>
 <button onclick="stopRecording()">Stop Recording</button>
-<input type="hidden" id="audio_data" name="audio_data" oninput="updateAudioData()">
+<input type="hidden" id="audio_data" name="audio_data" onchange="handleAudioDataChange()">
 <script>
-function updateAudioData() {
-    const audioDataInput = document.getElementById("audio_data");
-    if (audioDataInput.value) {
-        fetch('/update_audio_data', {
-            method: 'POST',
-            body: JSON.stringify({ audio: audioDataInput.value }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-    }
+function handleAudioDataChange() {
+    const audioDataInput = document.getElementById("audio_data").value;
+    const audioDataEvent = new CustomEvent("audioDataAvailable", { detail: { audioData: audioDataInput } });
+    window.dispatchEvent(audioDataEvent);
 }
+window.addEventListener("audioDataAvailable", (event) => {
+    const audioData = event.detail.audioData;
+    fetch("/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ audio_data: audioData }),
+    }).then(() => window.location.reload());
+});
 </script>
 """
 
 st.components.v1.html(record_audio_html)
 
-# Function to handle audio data update via session state
-def update_audio_data(audio_data):
-    st.session_state.audio_data = audio_data
+# Function to handle the custom event and update session state
+def handle_audio_data():
+    audio_data = st.session_state.audio_data
+    if audio_data:
+        audio_bytes = base64.b64decode(audio_data)
+        audio = AudioSegment.from_file(BytesIO(audio_bytes), format="wav")
+        st.audio(BytesIO(audio_bytes), format='audio/wav')
+        st.write("Audio recorded successfully!")
 
-# Process and display the audio data if available
+# Check for POST request to update session state
+if st.request.method == "POST":
+    request_data = st.request.get_json()
+    st.session_state.audio_data = request_data.get("audio_data", "")
+    handle_audio_data()
+
+# Display the recorded audio if available
 if st.session_state.audio_data:
-    audio_bytes = base64.b64decode(st.session_state.audio_data)
-    audio = AudioSegment.from_file(BytesIO(audio_bytes), format="wav")
-    st.audio(BytesIO(audio_bytes), format='audio/wav')
-
-    # Process the audio object as needed
-    st.write("Audio recorded successfully!")
+    handle_audio_data()

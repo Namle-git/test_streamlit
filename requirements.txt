@@ -4,4 +4,4 @@ Flask
 speechrecognition
 numpy
 flask-cors
-waitress
+pydub

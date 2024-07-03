@@ -78,7 +78,7 @@ def handle_audio_data():
         st.write("Audio recorded successfully!")
 
 
-if  st.query_params["audio_data"][0]:
+if st.query_params["audio_data"][0]:
     st.session_state.audio_data = st.query_params["audio_data"][0]
     handle_audio_data()
 

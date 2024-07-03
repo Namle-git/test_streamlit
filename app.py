@@ -1,37 +1,58 @@
 import streamlit as st
+import requests
+import base64
+from io import BytesIO
+from pydub import AudioSegment
 
-# Initialize Streamlit app
-st.title("Basic String Communication Web App")
+st.title("Audio Recorder in Streamlit")
 
-# HTML and JavaScript for sending a string
-html_code = """
+# HTML and JavaScript code to record audio
+record_audio_html = """
 <script>
-function sendString() {
-    const url = `/string_upload`; // Use relative URL
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text: "Hello from the frontend!" })
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok: ' + response.statusText);
-        }
-        return response.json();
-    }).then(data => {
-        console.log("Received response:", data);
-        document.getElementById("response").innerText = "Response: " + data.message;
-    }).catch(error => {
-        console.error("Error uploading string:", error);
-        document.getElementById("response").innerText = "Error: " + error.message;
-    });
+let mediaRecorder;
+let audioChunks = [];
+
+function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+            mediaRecorder.start();
+        });
+}
+
+function stopRecording() {
+    mediaRecorder.stop();
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+            const base64String = reader.result.split(',')[1];
+            fetch('/upload_audio', {
+                method: 'POST',
+                body: JSON.stringify({ audio: base64String }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+              .then(data => {
+                  document.getElementById("audio_url").value = data.audio_url;
+              });
+        };
+    };
 }
 </script>
-
-<button onclick="sendString()">Send String</button>
-<p id="response">Response: </p>
+<button onclick="startRecording()">Start Recording</button>
+<button onclick="stopRecording()">Stop Recording</button>
+<input type="hidden" id="audio_url" name="audio_url">
 """
 
-# Include the HTML and JavaScript in the Streamlit app
-st.components.v1.html(html_code, height=200)
+st.components.v1.html(record_audio_html)
+
+audio_url = st.text_input("Recorded Audio URL", key="audio_url")
+
+if audio_url:
+    st.audio(audio_url, format='audio/wav')

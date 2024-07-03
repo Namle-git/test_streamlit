@@ -21,6 +21,7 @@ function startRecording() {
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];  // Reset audio chunks
             mediaRecorder.ondataavailable = event => {
                 audioChunks.push(event.data);
             };
@@ -30,18 +31,20 @@ function startRecording() {
 
 // Function to stop recording audio
 function stopRecording() {
-    mediaRecorder.stop();
-    mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = () => {
-            const base64String = reader.result.split(',')[1];
-            const audioDataInput = document.getElementById("audio_data");
-            audioDataInput.value = base64String;
-            audioDataInput.dispatchEvent(new Event('change'));
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+                const base64String = reader.result.split(',')[1];
+                const audioDataInput = document.getElementById("audio_data");
+                audioDataInput.value = base64String;
+                audioDataInput.dispatchEvent(new Event('change'));
+            };
         };
-    };
+    }
 }
 </script>
 <button onclick="startRecording()">Start Recording</button>

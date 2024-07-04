@@ -49,10 +49,13 @@ function startRecording() {
 
             // Automatically stop recording after 5 seconds (5000 milliseconds)
             setTimeout(() => {
-                if (mediaRecorder.state !== "inactive") {
+                if (mediaRecorder.state === "recording") {
                     mediaRecorder.stop();
                 }
             }, 5000);
+        })
+        .catch(error => {
+            console.error("Error accessing media devices.", error);
         });
 }
 

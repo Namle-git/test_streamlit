@@ -17,71 +17,22 @@ if 'query_params' not in st.session_state:
 
 # JavaScript for audio recording and setting session state
 record_audio_html = """
-<button onclick="startRecording()">Start Recording</button>
-<input type="hidden" id="audio_data" name="audio_data" onchange="handleAudioDataChange()">
-<p id="updated_url"></p>
+// Get the current URL
+let currentUrl = window.location.href;
 
-<script>
-let mediaRecorder;
-let audioChunks = [];
-
-// Function to start recording audio
-function startRecording() {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];  // Reset audio chunks
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => {
-                    const base64String = reader.result.split(',')[1];
-                    const audioDataInput = document.getElementById("audio_data");
-                    audioDataInput.value = base64String;
-                    audioDataInput.dispatchEvent(new Event('change'));
-                };
-            };
-            mediaRecorder.start();
-
-            // Automatically stop recording after 5 seconds (5000 milliseconds)
-            setTimeout(() => {
-                if (mediaRecorder.state === "recording") {
-                    mediaRecorder.stop();
-                }
-            }, 5000);
-        })
-        .catch(error => {
-            console.error("Error accessing media devices.", error);
-        });
+// Check if the URL already has query parameters
+if (currentUrl.indexOf('?') > -1) {
+    // If yes, append the new parameter with &
+    currentUrl += '&string=hello';
+} else {
+    // If no, add the new parameter with ?
+    currentUrl += '?string=hello';
 }
 
-function handleAudioDataChange() {
-    const audioDataInput = document.getElementById("audio_data").value;
-    const audioDataEvent = new CustomEvent("audioDataAvailable", { detail: { audioData: audioDataInput } });
-    window.dispatchEvent(audioDataEvent);
-}
+// Update the URL without reloading the page
+window.history.pushState({ path: currentUrl }, '', currentUrl);
 
-window.addEventListener("audioDataAvailable", (event) => {
-    const audioData = event.detail.audioData;
-    updateURLWithAudioData(audioData);
-});
-
-function updateURLWithAudioData(base64Audio) {
-    const currentURL = new URL(window.location.href);
-    currentURL.searchParams.set('audio_upload', base64Audio);
-    window.history.replaceState({}, '', currentURL);
-    displayUpdatedURL(currentURL);
-}
-
-function displayUpdatedURL(url) {
-    const urlElement = document.getElementById("updated_url");
-    urlElement.textContent = "Updated URL: " + url.href;
-}
-</script>
+console.log('Updated URL:', currentUrl);
 """
 
 components.html(record_audio_html, height=200)

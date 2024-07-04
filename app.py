@@ -17,6 +17,9 @@ if 'query_params' not in st.session_state:
 
 # JavaScript for audio recording and setting session state
 record_audio_html = """
+<button onclick="startRecording()">Start Recording</button>
+<input type="hidden" id="audio_data" name="audio_data" onchange="handleAudioDataChange()">
+
 <script>
 let mediaRecorder;
 let audioChunks = [];
@@ -52,22 +55,22 @@ function startRecording() {
         });
 }
 
-</script>
-<button onclick="startRecording()">Start Recording</button>
-<input type="hidden" id="audio_data" name="audio_data" onchange="handleAudioDataChange()">
-<script>
 function handleAudioDataChange() {
     const audioDataInput = document.getElementById("audio_data").value;
     const audioDataEvent = new CustomEvent("audioDataAvailable", { detail: { audioData: audioDataInput } });
     window.dispatchEvent(audioDataEvent);
 }
+
 window.addEventListener("audioDataAvailable", (event) => {
     const audioData = event.detail.audioData;
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = 'data:text/plain;base64,' + btoa(JSON.stringify({ audio_data: audioData }));
-    document.body.appendChild(iframe);
+    updateURLWithAudioData(audioData);
 });
+
+function updateURLWithAudioData(base64Audio) {
+    const currentURL = new URL(window.location.href);
+    currentURL.searchParams.set('audio_upload', base64Audio);
+    window.history.replaceState({}, '', currentURL);
+}
 </script>
 """
 

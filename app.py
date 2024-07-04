@@ -77,14 +77,16 @@ def handle_audio_data():
         audio = AudioSegment.from_file(BytesIO(audio_bytes), format="wav")
         st.audio(BytesIO(audio_bytes), format='audio/wav')
         st.write("Audio recorded successfully!")
-for i in range(20):
-    query_params = st.query_params.to_dict()
-    if "audio_data" in query_params:
-        st.session_state.audio_data = query_params["audio_data"][0]
-        handle_audio_data()
-    
-    # Display the recorded audio if available
-    if st.session_state.audio_data:
-        handle_audio_data()
-    time.sleep(7)
+
+# Capture query parameters sent by the JavaScript
+query_params = st.query_params.to_dict()
+st.write("This is the query_params")
+st.write(query_params)
+if "audio_data" in query_params:
+    st.session_state.audio_data = query_params["audio_data"][0]
+
+# Display the Base64 string if available
+if st.session_state.audio_data:
+    st.write("Base64 Audio Data:")
+    st.write(st.session_state.audio_data)
 

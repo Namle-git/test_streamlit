@@ -17,26 +17,39 @@ if 'query_params' not in st.session_state:
 
 # JavaScript for audio recording and setting session state
 record_audio_html = """
-<script>
-    document.getElementById('updateUrlButton').addEventListener('click', function() {
-        // Get the current URL
-        let currentUrl = window.location.href;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update URL Example</title>
+</head>
+<body>
+    <h1>Update URL Example</h1>
+    <button id="updateUrlButton">Add 'hello' to URL</button>
 
-        // Check if the URL already has query parameters
-        if (currentUrl.indexOf('?') > -1) {
-            // If yes, append the new parameter with &
-            currentUrl += '&string=hello';
-        } else {
-            // If no, add the new parameter with ?
-            currentUrl += '?string=hello';
-        }
+    <script>
+        document.getElementById('updateUrlButton').addEventListener('click', function() {
+            // Get the current URL
+            let currentUrl = window.location.href;
 
-        // Update the URL without reloading the page
-        window.history.pushState({ path: currentUrl }, '', currentUrl);
+            // Check if the URL already has query parameters
+            if (currentUrl.indexOf('?') > -1) {
+                // If yes, append the new parameter with &
+                currentUrl += '&string=hello';
+            } else {
+                // If no, add the new parameter with ?
+                currentUrl += '?string=hello';
+            }
 
-        console.log('Updated URL:', currentUrl);
-    });
-</script>
+            // Update the URL without reloading the page
+            window.history.pushState({ path: currentUrl }, '', currentUrl);
+
+            console.log('Updated URL:', currentUrl);
+        });
+    </script>
+</body>
+</html>
 """
 
 components.html(record_audio_html, height=200)

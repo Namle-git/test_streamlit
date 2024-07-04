@@ -19,6 +19,7 @@ if 'query_params' not in st.session_state:
 record_audio_html = """
 <button onclick="startRecording()">Start Recording</button>
 <input type="hidden" id="audio_data" name="audio_data" onchange="handleAudioDataChange()">
+<p id="updated_url"></p>
 
 <script>
 let mediaRecorder;
@@ -70,6 +71,12 @@ function updateURLWithAudioData(base64Audio) {
     const currentURL = new URL(window.location.href);
     currentURL.searchParams.set('audio_upload', base64Audio);
     window.history.replaceState({}, '', currentURL);
+    displayUpdatedURL(currentURL);
+}
+
+function displayUpdatedURL(url) {
+    const urlElement = document.getElementById("updated_url");
+    urlElement.textContent = "Updated URL: " + url.href;
 }
 </script>
 """

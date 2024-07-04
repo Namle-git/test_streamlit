@@ -3,18 +3,6 @@ import base64
 from io import BytesIO
 from pydub import AudioSegment
 import streamlit.components.v1 as components
-import time
-
-st.title("Audio Recorder in Streamlit")
-
-# Initialize session state for audio data
-if 'audio_data' not in st.session_state:
-    st.session_state.audio_data = ""
-import streamlit as st
-import base64
-from io import BytesIO
-from pydub import AudioSegment
-import streamlit.components.v1 as components
 
 st.title("Audio Recorder in Streamlit")
 
@@ -78,8 +66,7 @@ window.addEventListener("audioDataAvailable", (event) => {
 </script>
 """
 
-components.html(record_audio_html)
-
+components.html(record_audio_html, height=200)
 
 # Function to handle the custom event and update session state
 def handle_audio_data():
@@ -89,8 +76,6 @@ def handle_audio_data():
         audio = AudioSegment.from_file(BytesIO(audio_bytes), format="wav")
         st.audio(BytesIO(audio_bytes), format='audio/wav')
         st.write("Audio recorded successfully!")
-
-time.sleep(20)
 
 query_params = st.query_params.to_dict()
 if "audio_data" in query_params:

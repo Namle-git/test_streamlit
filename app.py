@@ -20,8 +20,5 @@ st.write("This is the query_params")
 st.write(st.session_state.query_params)
 
 st.session_state.query_params = "hello"
-# Display the Base64 string if available
-if st.session_state.audio_data:
-    st.write("Base64 Audio Data:")
-    st.write(st.session_state.audio_data)
+st.rerun()
 

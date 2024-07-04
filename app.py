@@ -17,22 +17,26 @@ if 'query_params' not in st.session_state:
 
 # JavaScript for audio recording and setting session state
 record_audio_html = """
-// Get the current URL
-let currentUrl = window.location.href;
+<script>
+    document.getElementById('updateUrlButton').addEventListener('click', function() {
+        // Get the current URL
+        let currentUrl = window.location.href;
 
-// Check if the URL already has query parameters
-if (currentUrl.indexOf('?') > -1) {
-    // If yes, append the new parameter with &
-    currentUrl += '&string=hello';
-} else {
-    // If no, add the new parameter with ?
-    currentUrl += '?string=hello';
-}
+        // Check if the URL already has query parameters
+        if (currentUrl.indexOf('?') > -1) {
+            // If yes, append the new parameter with &
+            currentUrl += '&string=hello';
+        } else {
+            // If no, add the new parameter with ?
+            currentUrl += '?string=hello';
+        }
 
-// Update the URL without reloading the page
-window.history.pushState({ path: currentUrl }, '', currentUrl);
+        // Update the URL without reloading the page
+        window.history.pushState({ path: currentUrl }, '', currentUrl);
 
-console.log('Updated URL:', currentUrl);
+        console.log('Updated URL:', currentUrl);
+    });
+</script>
 """
 
 components.html(record_audio_html, height=200)

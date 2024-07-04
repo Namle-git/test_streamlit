@@ -45,6 +45,7 @@ record_audio_html = """
             // Update the URL without reloading the page
             window.history.pushState({ path: currentUrl }, '', currentUrl);
 
+            // Optionally, log the updated URL to the console for debugging
             console.log('Updated URL:', currentUrl);
         });
     </script>

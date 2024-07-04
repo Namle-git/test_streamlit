@@ -86,7 +86,7 @@ def handle_audio_data():
 query_params = st.query_params.to_dict()
 st.session_state.query_params=query_params
 st.write("This is the query_params")
-st.write(st.session_state.query_param)
+st.write(st.session_state.query_params)
 
 st.write("This is the audio_data")
 if "audio_data" in query_params:

@@ -11,6 +11,10 @@ st.title("Audio Recorder in Streamlit")
 if 'audio_data' not in st.session_state:
     st.session_state.audio_data = ""
 
+# Initialize session state for audio data
+if 'query_params' not in st.session_state:
+    st.session_state.query_params = ""
+
 # JavaScript for audio recording and setting session state
 record_audio_html = """
 <script>
@@ -80,8 +84,11 @@ def handle_audio_data():
 
 # Capture query parameters sent by the JavaScript
 query_params = st.query_params.to_dict()
+st.session_state.query_params=query_params
 st.write("This is the query_params")
-st.write(query_params)
+st.write(st.session_state.query_param)
+
+st.write("This is the audio_data")
 if "audio_data" in query_params:
     st.session_state.audio_data = query_params["audio_data"][0]
 

@@ -93,8 +93,8 @@ def get_audio_path():
             return f.read().strip()
     except FileNotFoundError:
         return None
-
-audio_path = get_audio_path()
+if st.button("Get audio")
+    audio_path = get_audio_path()
 
 if audio_path:
     st.audio(audio_path)

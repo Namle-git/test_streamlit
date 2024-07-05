@@ -6,15 +6,17 @@
     <title>Audio Recorder</title>
 </head>
 <body>
-    <button id="record">Record</button>
-    <button id="stop">Stop</button>
-    <button id="upload">Upload</button>
+    <h1>Audio Recorder</h1>
+    <button id="record" onclick="startRecording()">Record</button>
+    <button id="stop" onclick="stopRecording()" disabled>Stop</button>
+    <button id="upload" onclick="uploadAudio()" disabled>Upload</button>
     <audio id="audio" controls></audio>
+    
     <script>
         let mediaRecorder;
         let audioChunks = [];
 
-        document.getElementById('record').addEventListener('click', async () => {
+        async function startRecording() {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
 
@@ -23,19 +25,24 @@
             };
 
             mediaRecorder.start();
-        });
+            document.getElementById('record').disabled = true;
+            document.getElementById('stop').disabled = false;
+        }
 
-        document.getElementById('stop').addEventListener('click', () => {
+        function stopRecording() {
             mediaRecorder.stop();
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = document.getElementById('audio');
                 audio.src = audioUrl;
+                document.getElementById('upload').disabled = false;
             };
-        });
+            document.getElementById('record').disabled = false;
+            document.getElementById('stop').disabled = true;
+        }
 
-        document.getElementById('upload').addEventListener('click', () => {
+        function uploadAudio() {
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             const formData = new FormData();
             formData.append('audio', audioBlob, 'recording.wav');
@@ -46,7 +53,6 @@
             }).then(response => response.json())
             .then(data => {
                 if (data.path) {
-                    // Pass the path to the Flask app
                     fetch('/flask/set_path', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -58,7 +64,10 @@
                     alert('Audio upload failed');
                 }
             });
-        });
+
+            document.getElementById('upload').disabled = true;
+            audioChunks = [];  // Reset the audio chunks for the next recording
+        }
     </script>
 </body>
 </html>

@@ -15,5 +15,6 @@ echo "Updating the shared library cache..."
 ldconfig || { echo "Failed to update shared library cache"; exit 1; }
 
 echo "Starting the integrated Flask and Streamlit server..."
+python backend.py &
 
 streamlit run app.py --server.port $PORT

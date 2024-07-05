@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recorder</title>
+</head>
+<body>
+    <button id="record">Record</button>
+    <button id="stop">Stop</button>
+    <button id="upload">Upload</button>
+    <audio id="audio" controls></audio>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('record').addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.start();
+        });
+
+        document.getElementById('stop').addEventListener('click', () => {
+            mediaRecorder.stop();
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = document.getElementById('audio');
+                audio.src = audioUrl;
+            };
+        });
+
+        document.getElementById('upload').addEventListener('click', () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+
+            fetch('/flask/upload', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+            .then(data => {
+                if (data.path) {
+                    // Pass the path to the Flask app
+                    fetch('/flask/set_path', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: data.path })
+                    }).then(() => {
+                        alert('Audio uploaded and path set successfully');
+                    });
+                } else {
+                    alert('Audio upload failed');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -55,13 +55,13 @@ html_code = """
             const formData = new FormData();
             formData.append('audio', audioBlob, 'recording.wav');
 
-            fetch('/flask/upload', {
+            fetch('https://simonaireceptionistchatbot.azurewebsites.net/flask/upload', {
                 method: 'POST',
                 body: formData
             }).then(response => response.json())
             .then(data => {
                 if (data.path) {
-                    fetch('/flask/set_path', {
+                    fetch('https://simonaireceptionistchatbot.azurewebsites.net/flask/upload', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: data.path })

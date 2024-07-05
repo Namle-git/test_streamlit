@@ -2,6 +2,8 @@ import streamlit as st
 import os
 import streamlit.components.v1 as components
 
+button = st.button("Get audio")
+
 # Define the HTML and JavaScript for audio recording and uploading
 html_code = """
 <!DOCTYPE html>
@@ -93,13 +95,8 @@ def get_audio_path():
             return f.read().strip()
     except FileNotFoundError:
         return None
-st.write("")
-st.write("")
-st.write("")
-st.write("")
-st.write("")
-st.write("")
-if st.button("Get audio"):
+
+if button:
     audio_path = get_audio_path()
 
 if audio_path:

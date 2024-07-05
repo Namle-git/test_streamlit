@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 html_code = """
 <script>
-    fetch('https://yourappname.azurewebsites.net/flask/test', {
+    fetch('https://simonaireceptionistchatbot.azurewebsites.net/flask/test', {
         method: 'GET'
     }).then(response => response.json())
     .then(data => {

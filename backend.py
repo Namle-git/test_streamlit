@@ -1,9 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
 
 app = Flask(__name__)
 UPLOAD_FOLDER = os.path.join(os.environ['HOME'], 'site', 'wwwroot', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_audio():
@@ -23,4 +27,4 @@ def set_path():
     return 'Path received', 200
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)  # Ensure Flask runs on a different port
+    app.run(debug=True, port=5000)

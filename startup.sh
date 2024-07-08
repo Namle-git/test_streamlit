@@ -14,8 +14,8 @@ pip install PyAudio==0.2.14 || { echo "Failed to install PyAudio"; exit 1; }
 echo "Updating the shared library cache..."
 ldconfig || { echo "Failed to update shared library cache"; exit 1; }
 
-echo "Starting the Flask server..."
-gunicorn --bind=0.0.0.0:8000 backend:app &
+echo "Installing pm2..."
+npm install -g pm2 || { echo "Failed to install pm2"; exit 1; }
 
-echo "Starting the Streamlit server..."
-streamlit run ./app.py --server.port 8501 --server.headless true
+echo "Starting pm2 to manage Flask and Streamlit..."
+pm2 start /home/site/wwwroot/ecosystem.config.js

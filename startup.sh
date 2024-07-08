@@ -15,4 +15,7 @@ echo "Updating the shared library cache..."
 ldconfig || { echo "Failed to update shared library cache"; exit 1; }
 
 echo "Starting the Flask server..."
-gunicorn --bind=0.0.0.0:8000 backend:app
+gunicorn --bind=0.0.0.0:8000 backend:app &
+
+echo "Starting the Streamlit server..."
+streamlit run ./app.py --server.port 8501 --server.headless true

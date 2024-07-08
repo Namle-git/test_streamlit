@@ -14,5 +14,5 @@ pip install PyAudio==0.2.14 || { echo "Failed to install PyAudio"; exit 1; }
 echo "Updating the shared library cache..."
 ldconfig || { echo "Failed to update shared library cache"; exit 1; }
 
-echo "Starting the integrated Flask and Streamlit server..."
-python3 ./backend.py 
+echo "Starting the Flask server..."
+python3 ./backend.py

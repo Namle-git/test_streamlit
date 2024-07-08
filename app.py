@@ -37,7 +37,7 @@ html_code = """
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.wav');
     
-        fetch('https://simonaireceptionistchatbot.azurewebsites.net/flask/upload', {
+        fetch('https://simonaireceptionistchatbot.azurewebsites.net/upload', {
             method: 'POST',
             body: formData,
             headers: {
@@ -50,7 +50,7 @@ html_code = """
             return response.json();
         }).then(data => {
             if (data.path) {
-                fetch('https://simonaireceptionistchatbot.azurewebsites.net/flask/set_path', {
+                fetch('https://simonaireceptionistchatbot.azurewebsites.net/set_path', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: data.path })

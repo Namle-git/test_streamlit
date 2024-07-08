@@ -39,13 +39,16 @@ html_code = """
 
         fetch('https://simonaireceptionistchatbot.azurewebsites.net/flask/upload', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
         }).then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-        .then(data => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }).then(data => {
             if (data.path) {
                 fetch('https://simonaireceptionistchatbot.azurewebsites.net/flask/set_path', {
                     method: 'POST',
@@ -76,6 +79,10 @@ html_code = """
     });
 </script>
 
+<button id="record" onclick="startRecording()">Record</button>
+<button id="stop" onclick="stopRecording()" disabled>Stop</button>
+<button id="upload" onclick="uploadAudio()" disabled>Upload</button>
+<audio id="audio" controls></audio>
 """
 
 components.html(html_code, height=600)

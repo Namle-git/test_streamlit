@@ -40,5 +40,5 @@ def test():
     return jsonify({"message": "CORS is working!"})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('WEBSITE_PORT', 8000))
+    port = int(os.environ.get('WEBSITE_PORT', 8501))
     app.run(debug=True, host='0.0.0.0', port=port)  # Listen on all network interfaces

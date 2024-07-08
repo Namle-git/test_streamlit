@@ -6,7 +6,8 @@ import logging
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-UPLOAD_FOLDER = os.path.join(os.environ['HOME'], 'site', 'wwwroot', 'uploads')
+# Use a default path if HOME environment variable is not set
+UPLOAD_FOLDER = os.path.join(os.environ.get('HOME', os.getcwd()), 'site', 'wwwroot', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Set up logging

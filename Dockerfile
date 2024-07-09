@@ -2,10 +2,10 @@
 FROM python:3.11-slim
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /home/site/wwwroot
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy the current directory contents into the container at /home/site/wwwroot
+COPY . /home/site/wwwroot
 
 # Install Node.js and npm to use PM2
 RUN apt-get update && apt-get install -y nodejs npm
@@ -18,9 +18,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose necessary ports
 EXPOSE 8000 8501
-
-# Copy PM2 configuration file
-COPY ecosystem.config.js /app/ecosystem.config.js
 
 # Run PM2 to start both Flask and Streamlit
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]

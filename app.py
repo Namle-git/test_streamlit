@@ -1,9 +1,13 @@
+import os
 import streamlit as st
 import requests
 
 st.title('Streamlit and Flask Communication')
 
-response = requests.get('http://localhost:5000/api/data')
+# Use an environment variable or relative URL
+api_url = os.environ.get('FLASK_API_URL', '/flask/api/data')
+response = requests.get(api_url)
+
 if response.status_code == 200:
     data = response.json()
     st.write(data['message'])

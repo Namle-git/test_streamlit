@@ -8,3 +8,4 @@ pydub
 gunicorn
 pm2
 sounddevice
+spicy

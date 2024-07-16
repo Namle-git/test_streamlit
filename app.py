@@ -1,15 +1,29 @@
-import os
 import streamlit as st
-import requests
+import sounddevice as sd
+import numpy as np
+import io
+import scipy.io.wavfile as wavfile
 
-st.title('Streamlit and Flask Communication')
+def record_audio(duration, sample_rate):
+    recording = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1)
+    sd.wait()
+    return recording
 
-# Use an environment variable or relative URL
-api_url = os.environ.get('FLASK_API_URL', '/flask/api/data')
-response = requests.get(api_url)
+st.title("Audio Recorder and Player")
 
-if response.status_code == 200:
-    data = response.json()
-    st.write(data['message'])
-else:
-    st.write('Failed to get data from Flask')
+duration = st.slider("Recording duration (seconds)", 1, 10, 5)
+sample_rate = 44100
+
+if st.button("Record"):
+    st.write("Recording...")
+    audio_data = record_audio(duration, sample_rate)
+    st.write("Recording complete!")
+    
+    # Convert the NumPy array to bytes
+    byte_io = io.BytesIO()
+    wavfile.write(byte_io, sample_rate, audio_data)
+    
+    # Display the audio
+    st.audio(byte_io.getvalue(), format="audio/wav")
+
+st.write("Note: Make sure you've allowed microphone access in your browser.")

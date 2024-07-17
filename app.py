@@ -3,6 +3,7 @@ import numpy as np
 import io
 import soundfile as sf
 from scipy.io import wavfile
+import base64
 
 st.title("Audio Recorder and Player")
 
@@ -47,13 +48,16 @@ function startRecording() {
 }
 
 function sendAudioToStreamlit(base64data) {
-    fetch("http://localhost:8501/", {
+    fetch("", {
         method: "POST",
         body: JSON.stringify({"audio_data": base64data}),
         headers: {
             "Content-Type": "application/json"
         }
-    }).then(response => console.log(response))
+    }).then(response => response.json())
+    .then(data => {
+        window.parent.postMessage({type: "streamlit:setComponentValue", value: data.audio_data}, "*")
+    })
     .catch(error => console.error('Error:', error));
 }
 
@@ -67,12 +71,17 @@ if (document.getElementById('record-button')) {
 st.components.v1.html(js_code, height=0)
 
 # Handle the received audio data
-if st.session_state.get('audio_data'):
-    audio_data = st.session_state['audio_data']
-    audio_bytes = io.BytesIO(audio_data)
+if "audio_data" not in st.session_state:
+    st.session_state.audio_data = None
+
+if st.session_state.audio_data:
+    # Remove the "data:audio/wav;base64," prefix
+    audio_data = st.session_state.audio_data.split(",")[1]
+    audio_bytes = base64.b64decode(audio_data)
     
     # Read the audio data
-    data, samplerate = sf.read(audio_bytes)
+    with io.BytesIO(audio_bytes) as audio_io:
+        data, samplerate = sf.read(audio_io)
     
     # Convert to 16-bit PCM
     audio_data_16bit = (data * 32767).astype(np.int16)
@@ -80,13 +89,13 @@ if st.session_state.get('audio_data'):
     # Create a BytesIO object for the WAV file
     wav_bytes = io.BytesIO()
     wavfile.write(wav_bytes, samplerate, audio_data_16bit)
+    wav_bytes.seek(0)
     
     # Display the audio
-    audio_player.audio(wav_bytes.getvalue(), format="audio/wav")
+    audio_player.audio(wav_bytes, format="audio/wav")
 
 # Handle POST requests with audio data
-if 'audio_data' in st.experimental_get_query_params():
-    audio_data = st.experimental_get_query_params()['audio_data'][0]
-    audio_bytes = io.BytesIO(audio_data.encode('utf-8'))
-    st.session_state['audio_data'] = audio_bytes.getvalue()
+if st.experimental_user.audio_data:
+    st.session_state.audio_data = st.experimental_user.audio_data
+    st.experimental_user.audio_data = None
     st.experimental_rerun()

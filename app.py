@@ -14,6 +14,13 @@ record_button = st.button("Record Audio")
 # Use st.empty to create a placeholder for the audio player
 audio_player = st.empty()
 
+# Create a hidden form to receive audio data
+with st.form(key='audio_form', clear_on_submit=True):
+    audio_data_input = st.text_input("Audio Data", key="audio_data_input", type="password")
+    submitted = st.form_submit_button("Submit Audio", type="primary")
+    if submitted:
+        st.session_state.audio_data = audio_data_input
+
 # JavaScript to handle audio recording
 js_code = """
 <script>
@@ -36,7 +43,8 @@ function startRecording() {
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = () => {
                     const base64data = reader.result;
-                    sendAudioToStreamlit(base64data);
+                    document.getElementById('audio_data_input').value = base64data;
+                    document.querySelector('form button[type="submit"]').click();
                 }
             });
 
@@ -45,20 +53,6 @@ function startRecording() {
                 mediaRecorder.stop();
             }, 5000);
         });
-}
-
-function sendAudioToStreamlit(base64data) {
-    fetch("", {
-        method: "POST",
-        body: JSON.stringify({"audio_data": base64data}),
-        headers: {
-            "Content-Type": "application/json"
-        }
-    }).then(response => response.json())
-    .then(data => {
-        window.parent.postMessage({type: "streamlit:setComponentValue", value: data.audio_data}, "*")
-    })
-    .catch(error => console.error('Error:', error));
 }
 
 if (document.getElementById('record-button')) {
@@ -71,10 +65,7 @@ if (document.getElementById('record-button')) {
 st.components.v1.html(js_code, height=0)
 
 # Handle the received audio data
-if "audio_data" not in st.session_state:
-    st.session_state.audio_data = None
-
-if st.session_state.audio_data:
+if "audio_data" in st.session_state and st.session_state.audio_data:
     # Remove the "data:audio/wav;base64," prefix
     audio_data = st.session_state.audio_data.split(",")[1]
     audio_bytes = base64.b64decode(audio_data)
@@ -93,9 +84,6 @@ if st.session_state.audio_data:
     
     # Display the audio
     audio_player.audio(wav_bytes, format="audio/wav")
-
-# Handle POST requests with audio data
-if st.experimental_user.audio_data:
-    st.session_state.audio_data = st.experimental_user.audio_data
-    st.experimental_user.audio_data = None
-    st.experimental_rerun()
+    
+    # Clear the audio data from session state
+    st.session_state.audio_data = None

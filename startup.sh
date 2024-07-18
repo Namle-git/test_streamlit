@@ -14,5 +14,4 @@ pip install PyAudio==0.2.14 || { echo "Failed to install PyAudio"; exit 1; }
 echo "Updating the shared library cache..."
 ldconfig || { echo "Failed to update shared library cache"; exit 1; }
 
-
-streamlit run app.py --server.port $PORT
+gunicorn --bind=0.0.0.0:8000 --workers=2 --threads=4 --worker-class=gthread wsgi:app

@@ -7,10 +7,9 @@ st.title("Audio Recorder and Player")
 audio_player = st.empty()
 
 # Create buttons
-col1, col2, col3 = st.columns(3)
-start_button = col1.button("Start Recording")
-stop_button = col2.button("Stop Recording")
-upload_button = col3.button("Upload Recording")
+col1, col2 = st.columns(2)
+start_stop_button = col1.button("Start Recording", key="start_stop")
+upload_button = col2.button("Upload Recording", key="upload", disabled=True)
 
 # Hidden form for audio data
 with st.form(key='audio_form', clear_on_submit=True):
@@ -26,6 +25,15 @@ js_code = """
 <script>
 let mediaRecorder;
 let audioChunks = [];
+let isRecording = false;
+
+function toggleRecording() {
+    if (!isRecording) {
+        startRecording();
+    } else {
+        stopRecording();
+    }
+}
 
 function startRecording() {
     audioChunks = [];
@@ -33,16 +41,27 @@ function startRecording() {
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.start();
+            isRecording = true;
 
             mediaRecorder.addEventListener("dataavailable", event => {
                 audioChunks.push(event.data);
             });
+
+            // Update button text
+            const button = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
+            if (button) button.innerText = "Stop Recording";
+
+            // Enable upload button
+            const uploadButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(2)');
+            if (uploadButton) uploadButton.disabled = false;
         });
 }
 
 function stopRecording() {
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
         mediaRecorder.stop();
+        isRecording = false;
+
         mediaRecorder.addEventListener("stop", () => {
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             const reader = new FileReader();
@@ -52,6 +71,10 @@ function stopRecording() {
                 document.getElementById('audio_data_input').value = base64data;
             }
         });
+
+        // Update button text
+        const button = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
+        if (button) button.innerText = "Start Recording";
     }
 }
 
@@ -59,16 +82,14 @@ function uploadRecording() {
     document.querySelector('form button[type="submit"]').click();
 }
 
-// Streamlit Streamlit event listener
+// Streamlit event listener
 window.addEventListener('message', function(event) {
     if (event.data.type === 'streamlit:render') {
-        const startButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
-        const stopButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(2)');
-        const uploadButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(3)');
+        const startStopButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
+        const uploadButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(2)');
         
-        if (startButton && stopButton && uploadButton) {
-            startButton.addEventListener('click', startRecording);
-            stopButton.addEventListener('click', stopRecording);
+        if (startStopButton && uploadButton) {
+            startStopButton.addEventListener('click', toggleRecording);
             uploadButton.addEventListener('click', uploadRecording);
         }
     }
@@ -84,11 +105,8 @@ if "audio_bytes" in st.session_state and st.session_state.audio_bytes:
     audio_player.audio(st.session_state.audio_bytes, format="audio/wav")
     st.session_state.audio_bytes = None  # Clear the audio data after playing
 
-if start_button:
-    st.write("Recording started. Click 'Stop Recording' when you're done.")
-
-if stop_button:
-    st.write("Recording stopped. Click 'Upload Recording' to play the audio.")
+if start_stop_button:
+    st.write("Click 'Upload Recording' when you're done to play the audio.")
 
 if upload_button:
     st.write("Uploading recording... If you don't hear audio, please try recording again.")

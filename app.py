@@ -2,7 +2,6 @@ import streamlit as st
 import base64
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
 import threading
 
 # Flask app
@@ -154,14 +153,8 @@ if st.session_state.get("audio_data"):
 
 # Run Flask in a separate thread
 def run_flask():
-    app.run(port=5000)
+    app.run(port=8000)
 
 if __name__ == '__main__':
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
-    
-    # Run Streamlit
-    import streamlit.web.bootstrap
-    streamlit.web.bootstrap.run(
-        __file__, command_line="", args=["--server.port", "8501", "--server.headless", "true"], flag_options={}
-    )

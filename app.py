@@ -1,7 +1,32 @@
 import streamlit as st
-import requests
 import base64
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import os
+import threading
 
+# Flask app
+app = Flask(__name__)
+CORS(app)
+
+# Global variable to store audio data
+audio_data = None
+
+@app.route('/save_audio', methods=['POST'])
+def save_audio():
+    global audio_data
+    audio_data = request.json['audio']
+    return jsonify({"message": "Audio saved successfully"})
+
+@app.route('/get_audio', methods=['GET'])
+def get_audio():
+    global audio_data
+    if audio_data:
+        return jsonify({"audio": audio_data})
+    else:
+        return jsonify({"error": "No audio data found"}), 404
+
+# Streamlit app
 st.title("Audio Recorder and Player")
 
 # Placeholder for audio player
@@ -60,7 +85,7 @@ function stopRecording() {
             reader.readAsDataURL(audioBlob);
             reader.onloadend = () => {
                 const base64data = reader.result;
-                fetch('http://localhost:5000/save_audio', {
+                fetch('/save_audio', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -80,7 +105,7 @@ function stopRecording() {
 }
 
 function uploadRecording() {
-    fetch('http://localhost:5000/get_audio')
+    fetch('/get_audio')
     .then(response => response.json())
     .then(data => {
         if (data.audio) {
@@ -113,7 +138,7 @@ st.components.v1.html(js_code, height=0)
 
 # Handle the uploaded audio data
 if "audio_data" in st.session_state:
-    audio_bytes = base64.b64decode(st.session_state.audio_data)
+    audio_bytes = base64.b64decode(st.session_state.audio_data.split(',')[1])
     audio_player.audio(audio_bytes, format="audio/wav")
     del st.session_state.audio_data  # Clear the audio data after playing
 
@@ -126,3 +151,17 @@ if upload_button:
 # This will catch the audio data sent from JavaScript
 if st.session_state.get("audio_data"):
     st.experimental_rerun()
+
+# Run Flask in a separate thread
+def run_flask():
+    app.run(port=5000)
+
+if __name__ == '__main__':
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+    
+    # Run Streamlit
+    import streamlit.web.bootstrap
+    streamlit.web.bootstrap.run(
+        __file__, command_line="", args=["--server.port", "8501", "--server.headless", "true"], flag_options={}
+    )

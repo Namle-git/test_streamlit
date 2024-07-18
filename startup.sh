@@ -14,9 +14,5 @@ pip install PyAudio==0.2.14 || { echo "Failed to install PyAudio"; exit 1; }
 echo "Updating the shared library cache..."
 ldconfig || { echo "Failed to update shared library cache"; exit 1; }
 
-python backend.py &
-
-# Wait for Flask to start up (adjust the sleep time if needed)
-sleep 5
 
 streamlit run app.py --server.port $PORT

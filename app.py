@@ -1,160 +1,134 @@
+from flask import Flask, request, jsonify, send_file
 import streamlit as st
+import os
 import base64
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+import io
 import threading
 
 # Flask app
-app = Flask(__name__)
-CORS(app)
+flask_app = Flask(__name__)
 
-# Global variable to store audio data
-audio_data = None
-
-@app.route('/save_audio', methods=['POST'])
+@flask_app.route('/api/save_audio', methods=['POST'])
 def save_audio():
-    global audio_data
     audio_data = request.json['audio']
+    audio_binary = base64.b64decode(audio_data.split(',')[1])
+    
+    # Save the audio file
+    with open('recorded_audio.wav', 'wb') as f:
+        f.write(audio_binary)
+    
     return jsonify({"message": "Audio saved successfully"})
 
-@app.route('/get_audio', methods=['GET'])
+@flask_app.route('/api/get_audio', methods=['GET'])
 def get_audio():
-    global audio_data
-    if audio_data:
-        return jsonify({"audio": audio_data})
+    if os.path.exists('recorded_audio.wav'):
+        return send_file('recorded_audio.wav', mimetype='audio/wav')
     else:
-        return jsonify({"error": "No audio data found"}), 404
+        return jsonify({"error": "No audio file found"}), 404
 
 # Streamlit app
-st.title("Audio Recorder and Player")
+def streamlit_app():
+    st.title("Audio Recorder and Player")
 
-# Placeholder for audio player
-audio_player = st.empty()
+    # Placeholder for audio player
+    audio_player = st.empty()
 
-# Create buttons
-col1, col2 = st.columns(2)
-start_stop_button = col1.button("Start Recording", key="start_stop")
-upload_button = col2.button("Upload Recording", key="upload", disabled=True)
+    # Create buttons
+    col1, col2 = st.columns(2)
+    start_stop_button = col1.button("Start Recording", key="start_stop")
+    upload_button = col2.button("Upload Recording", key="upload")
 
-# JavaScript to handle audio recording
-js_code = """
-<script>
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
+    # JavaScript to handle audio recording
+    js_code = """
+    <script>
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
 
-function toggleRecording() {
-    if (!isRecording) {
-        startRecording();
-    } else {
-        stopRecording();
+    function toggleRecording() {
+        if (!isRecording) {
+            startRecording();
+        } else {
+            stopRecording();
+        }
     }
-}
 
-function startRecording() {
-    audioChunks = [];
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.start();
-            isRecording = true;
+    function startRecording() {
+        audioChunks = [];
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+                isRecording = true;
 
-            mediaRecorder.addEventListener("dataavailable", event => {
-                audioChunks.push(event.data);
+                mediaRecorder.addEventListener("dataavailable", event => {
+                    audioChunks.push(event.data);
+                });
+
+                // Update button text
+                const button = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
+                if (button) button.innerText = "Stop Recording";
+            });
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            isRecording = false;
+
+            mediaRecorder.addEventListener("stop", () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64data = reader.result;
+                    fetch('/api/save_audio', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ audio: base64data }),
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch((error) => console.error('Error:', error));
+                }
             });
 
             // Update button text
             const button = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
-            if (button) button.innerText = "Stop Recording";
+            if (button) button.innerText = "Start Recording";
+        }
+    }
 
-            // Enable upload button
-            const uploadButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(2)');
-            if (uploadButton) uploadButton.disabled = false;
-        });
-}
-
-function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-        isRecording = false;
-
-        mediaRecorder.addEventListener("stop", () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                fetch('/save_audio', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ audio: base64data }),
-                })
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch((error) => console.error('Error:', error));
+    // Streamlit event listener
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'streamlit:render') {
+            const startStopButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
+            if (startStopButton) {
+                startStopButton.addEventListener('click', toggleRecording);
             }
-        });
-
-        // Update button text
-        const button = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
-        if (button) button.innerText = "Start Recording";
-    }
-}
-
-function uploadRecording() {
-    fetch('/get_audio')
-    .then(response => response.json())
-    .then(data => {
-        if (data.audio) {
-            window.parent.postMessage({
-                type: 'streamlit:setComponentValue',
-                value: data.audio,
-            }, '*');
         }
-    })
-    .catch((error) => console.error('Error:', error));
-}
+    });
+    </script>
+    """
 
-// Streamlit event listener
-window.addEventListener('message', function(event) {
-    if (event.data.type === 'streamlit:render') {
-        const startStopButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(1)');
-        const uploadButton = window.parent.document.querySelector('button[kind="secondary"]:nth-of-type(2)');
-        
-        if (startStopButton && uploadButton) {
-            startStopButton.addEventListener('click', toggleRecording);
-            uploadButton.addEventListener('click', uploadRecording);
-        }
-    }
-});
-</script>
-"""
+    # Inject JavaScript code
+    st.components.v1.html(js_code, height=0)
 
-# Inject JavaScript code
-st.components.v1.html(js_code, height=0)
+    if start_stop_button:
+        st.write("Click 'Start Recording' again to stop recording.")
 
-# Handle the uploaded audio data
-if "audio_data" in st.session_state:
-    audio_bytes = base64.b64decode(st.session_state.audio_data.split(',')[1])
-    audio_player.audio(audio_bytes, format="audio/wav")
-    del st.session_state.audio_data  # Clear the audio data after playing
+    if upload_button:
+        with open('recorded_audio.wav', 'rb') as f:
+            audio_bytes = f.read()
+        audio_player.audio(audio_bytes, format="audio/wav")
 
-if start_stop_button:
-    st.write("Click 'Upload Recording' when you're done to play the audio.")
-
-if upload_button:
-    st.write("Uploading recording... If you don't hear audio, please try recording again.")
-
-# This will catch the audio data sent from JavaScript
-if st.session_state.get("audio_data"):
-    st.experimental_rerun()
-
-# Run Flask in a separate thread
-def run_flask():
-    app.run(port=8000)
+# Run both Flask and Streamlit
+def run_app():
+    flask_thread = threading.Thread(target=flask_app.run, kwargs={'port': 5000})
+    flask_thread.start()
+    streamlit_app()
 
 if __name__ == '__main__':
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
+    run_app()

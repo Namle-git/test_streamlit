@@ -28,4 +28,4 @@ def get_audio():
         return jsonify({"error": "No audio file found"}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=8000)

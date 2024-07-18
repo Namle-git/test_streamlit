@@ -9,7 +9,7 @@ st.title("Audio Recorder and Player")
 
 # Create a button to start recording
 st.write("Click the button below and allow microphone access to start recording")
-record_button = st.button("Record Audio")
+record_button = st.button("Record Audio", key="record_button")
 
 # Use st.empty to create a placeholder for the audio player
 audio_player = st.empty()
@@ -33,6 +33,7 @@ function startRecording() {
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.start();
 
+            audioChunks = [];
             mediaRecorder.addEventListener("dataavailable", event => {
                 audioChunks.push(event.data);
             });
@@ -55,9 +56,15 @@ function startRecording() {
         });
 }
 
-if (document.getElementById('record-button')) {
-    document.getElementById('record-button').addEventListener('click', startRecording);
-}
+// Use Streamlit's message passing to detect button clicks
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'streamlit:render') {
+        const button = window.parent.document.querySelector('button[kind="secondary"]');
+        if (button) {
+            button.addEventListener('click', startRecording);
+        }
+    }
+});
 </script>
 """
 
@@ -87,3 +94,6 @@ if "audio_data" in st.session_state and st.session_state.audio_data:
     
     # Clear the audio data from session state
     st.session_state.audio_data = None
+
+if record_button:
+    st.write("Recording started. Please wait for 5 seconds...")

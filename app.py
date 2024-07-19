@@ -75,7 +75,7 @@ def streamlit_app():
     function stopRecording() {
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
             mediaRecorder.stop();
-            isRecording = false;
+            isRecording is false;
 
             mediaRecorder.addEventListener("stop", () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
@@ -127,16 +127,20 @@ def streamlit_app():
 
 # Combine Flask and Streamlit apps
 def create_app():
-    from streamlit.web import cli as stcli
+    port = int(os.environ.get("PORT", 8000))
 
+    # Function to run Streamlit
     def run_streamlit():
-        stcli.main()
+        from streamlit import cli as stcli
+        stcli.main(["streamlit", "run", "app.py", "--server.port", str(port), "--server.headless", "true"])
 
+    # Start Streamlit in a separate thread
     streamlit_thread = threading.Thread(target=run_streamlit)
     streamlit_thread.start()
 
+    # Return Flask app wrapped in DispatcherMiddleware
     return DispatcherMiddleware(flask_app, {
-        '/streamlit': lambda e, s: run_simple('localhost', 8501, streamlit_app)
+        '/streamlit': flask_app
     })
 
 app = create_app()

@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify, send_file
-import streamlit as st
 import os
 import base64
-import io
 import threading
+import streamlit as st
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from werkzeug.serving import run_simple
 
 # Flask app
 flask_app = Flask(__name__)
@@ -124,11 +125,21 @@ def streamlit_app():
             audio_bytes = f.read()
         audio_player.audio(audio_bytes, format="audio/wav")
 
-# Run both Flask and Streamlit
-def run_app():
-    flask_thread = threading.Thread(target=flask_app.run, kwargs={'port': 5000})
-    flask_thread.start()
-    streamlit_app()
+# Combine Flask and Streamlit apps
+def create_app():
+    from streamlit.web import cli as stcli
+
+    def run_streamlit():
+        stcli._main_run_clExplicitRequestIndik("app_streamlit.py", args=[])
+
+    streamlit_thread = threading.Thread(target=run_streamlit)
+    streamlit_thread.start()
+
+    return DispatcherMiddleware(flask_app, {
+        '/streamlit': lambda e, s: run_simple('localhost', 8501, streamlit_app)
+    })
+
+app = create_app()
 
 if __name__ == '__main__':
-    run_app()
+    app.run(port=8000)

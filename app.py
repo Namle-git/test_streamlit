@@ -130,7 +130,7 @@ def create_app():
     from streamlit.web import cli as stcli
 
     def run_streamlit():
-        stcli._main_run_clExplicitRequestIndik("app_streamlit.py", args=[])
+        stcli._main_run_clExplicitRequestIndik("app.py", args=[])
 
     streamlit_thread = threading.Thread(target=run_streamlit)
     streamlit_thread.start()

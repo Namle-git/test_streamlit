@@ -10,3 +10,4 @@ pm2
 sounddevice
 spicy
 soundfile
+werkzeug
